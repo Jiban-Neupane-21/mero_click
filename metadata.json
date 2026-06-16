@@ -1,0 +1,6 @@
+{
+  "name": "Photo Studio Service",
+  "description": "Full clone of photostudioservice.com offering professional photography bookings, portfolio catalog, and an interactive online headshot and visa photo resizer tool for ERAS, EPS Korea, and global visa requirements.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

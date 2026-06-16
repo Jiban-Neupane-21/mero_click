@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Base custom classes to match dynamic gold/bronze and slate editorial theme */
+body {
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E50914;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b3070f;
+}
+
+/* Interactive custom animation classes */
+.hover-gold-glow {
+  transition: all 0.3s ease-in-out;
+}
+
+.hover-gold-glow:hover {
+  box-shadow: 0 10px 30px -10px rgba(229, 9, 20, 0.4);
+  transform: translateY(-4px);
+}
+
+.title-display {
+  font-family: var(--font-display);
+}
+
+/* Fine-tune photo canvas cropper guidelines overlay */
+.crop-overlay-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #E50914;
+  pointer-events: none;
+}
+
+.crop-overlay-grid::before {
+  content: '';
+  position: absolute;
+  top: 33.33%;
+  bottom: 33.33%;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed rgba(229, 9, 20, 0.6);
+  border-bottom: 1px dashed rgba(229, 9, 20, 0.6);
+}
+
+.crop-overlay-grid::after {
+  content: '';
+  position: absolute;
+  left: 33.33%;
+  right: 33.33%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed rgba(229, 9, 20, 0.6);
+  border-right: 1px dashed rgba(229, 9, 20, 0.6);
+}
