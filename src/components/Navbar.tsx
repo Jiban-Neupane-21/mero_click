@@ -48,6 +48,7 @@ import {
   Compass,
   Heart,
   Image as ImageIcon,
+  VideoIcon,
 } from "lucide-react";
 import { ColorModeContext } from "../App";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -168,6 +169,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
 
   const primaryMenuItems = [
     { label: "Portfolio", section: "portfolio", icon: Film },
+    { label: "Video", section: "video", icon: VideoIcon },
     { label: "FAQs", section: "faqs", icon: HelpCircle },
     { label: "Contact", section: "contact", icon: PhoneCall },
   ];
@@ -844,7 +846,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
           </Collapse>
 
           {/* Portfolio & Rest of menus */}
-          {primaryMenuItems.slice(1).map((item) => {
+          {primaryMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.section;
             return (

@@ -72,6 +72,20 @@ export interface FAQItem {
   answer: string;
   category: "booking" | "preparation" | "resizer" | "pricing";
 }
+export interface VideoItem {
+  id: string;
+  title: string;
+  youtubeId: string;
+  category:
+    | "Wedding Reel"
+    | "Cinematography"
+    | "Behind the Scenes"
+    | "Studio Promo"
+    | "Commercial";
+  duration: string;
+  description: string;
+  uploadDate: string;
+}
 
 export interface BookingDetails {
   serviceId: string;

@@ -23,15 +23,17 @@ import {
   useLocation,
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import ServiceCatalog from "./components/ServiceCatalog";
-import InteractiveResizer from "./components/InteractiveResizer";
-import PortfolioGrid from "./components/PortfolioGrid";
-import VisaGuides from "./components/VisaGuides";
-import PricingSection from "./components/PricingSection";
-import FaqSection from "./components/FaqSection";
-import ContactSection from "./components/ContactSection";
-import BookingPortal from "./components/BookingPortal";
+import HomePage from "./pages/HomePage";
+import ServicesPage from "./pages/ServicesPage";
+import PortfolioPage from "./pages/PortfolioPage";
+import FaqsPage from "./pages/FaqsPage";
+import ContactPage from "./pages/ContactPage";
+import VisaGuidesPage from "./pages/VisaGuidesPage";
+import ResizerPage from "./pages/ResizerPage";
+import PricingPage from "./pages/PricingPage";
+import BookingPage from "./pages/BookingPage";
+import VideoSection from "./pages/VideoPage";
+import AdminRoutes from "./routes/AdminRoutes";
 import { Camera, MapPin, ExternalLink, Mail, PhoneCall } from "lucide-react";
 
 export const ColorModeContext = createContext({
@@ -74,6 +76,8 @@ function AppContent() {
         return "/faqs";
       case "contact":
         return "/contact";
+      case "video":
+        return "/video";
       case "visa-guides":
         return "/visa-guides";
       case "resizer":
@@ -100,6 +104,8 @@ function AppContent() {
         return "faqs";
       case "/contact":
         return "contact";
+      case "/video":
+        return "video";
       case "/visa-guides":
         return "visa-guides";
       case "/resizer":
@@ -115,494 +121,6 @@ function AppContent() {
 
   const activeSection = pathToSection(location.pathname);
 
-  // Standard main home page content layout view
-  const renderHomePage = () => (
-    <Box id="page-home">
-      <Hero onNavigate={handleScrollToSection} />
-      {/* Added mini specialties highlight on Home page for quick navigation */}
-      <Container maxWidth="xl" sx={{ py: 6 }}>
-        <Typography
-          variant="h4"
-          sx={{
-            fontFamily: '"Space Grotesk", sans-serif',
-            fontWeight: 700,
-            mb: 1,
-            textAlign: "center",
-          }}
-        >
-          Our Modern Portrait & Media Specialties
-        </Typography>
-        <Typography
-          variant="body1"
-          sx={{
-            textAlign: "center",
-            maxWidth: "700px",
-            mx: "auto",
-            mb: 5,
-            fontWeight: 300,
-          }}
-        >
-          We are Kathmandu’s leading studio for biometric validations, majestic
-          wedding videography, custom-crafted photo framing, and corporate brand
-          headshots.
-        </Typography>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div>
-            <Box
-              onClick={() => handleScrollToSection("services")}
-              sx={{
-                p: 3,
-                border: "1px solid rgba(229,9,20,0.15)",
-                borderRadius: "6px",
-                textAlign: "center",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  borderColor: "#E50914",
-                  backgroundColor: "rgba(229,9,20,0.02)",
-                },
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#E50914", mb: 1, fontWeight: 600 }}
-              >
-                Weddings
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 300 }}>
-                Full day high-end cinematic wedding vlogs & photography.
-              </Typography>
-            </Box>
-          </div>
-          <div>
-            <Box
-              onClick={() => handleScrollToSection("services")}
-              sx={{
-                p: 3,
-                border: "1px solid rgba(229,9,20,0.15)",
-                borderRadius: "6px",
-                textAlign: "center",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  borderColor: "#E50914",
-                  backgroundColor: "rgba(229,9,20,0.02)",
-                },
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#E50914", mb: 1, fontWeight: 600 }}
-              >
-                Videography
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 300 }}>
-                Sony FX3 4K cinema commercials, reels & interviews.
-              </Typography>
-            </Box>
-          </div>
-          <div>
-            <Box
-              onClick={() => handleScrollToSection("services")}
-              sx={{
-                p: 3,
-                border: "1px solid rgba(229,9,20,0.15)",
-                borderRadius: "6px",
-                textAlign: "center",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  borderColor: "#E50914",
-                  backgroundColor: "rgba(229,9,20,0.02)",
-                },
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#E50914", mb: 1, fontWeight: 600 }}
-              >
-                Photo Frames
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 300 }}>
-                Premium teak wood hand carved custom fabrication.
-              </Typography>
-            </Box>
-          </div>
-          <div>
-            <Box
-              onClick={() => handleScrollToSection("visa-guides")}
-              sx={{
-                p: 3,
-                border: "1px solid rgba(229,9,20,0.15)",
-                borderRadius: "6px",
-                textAlign: "center",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  borderColor: "#E50914",
-                  backgroundColor: "rgba(229,9,20,0.02)",
-                },
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ color: "#E50914", mb: 1, fontWeight: 600 }}
-              >
-                Visa Photos
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 300 }}>
-                Different official specifications mapped to biometric rules.
-              </Typography>
-            </Box>
-          </div>
-        </div>
-      </Container>
-
-      {/* Featured Kathmandu Portrait Gallery */}
-      <Box
-        sx={{
-          py: 8,
-          backgroundColor: mode === "dark" ? "#070707" : "#f8fafc",
-          borderTop: "1px solid",
-          borderColor:
-            mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-        }}
-      >
-        <Container maxWidth="xl">
-          <Typography
-            variant="overline"
-            sx={{
-              color: "#E50914",
-              fontWeight: 600,
-              letterSpacing: "0.15em",
-              display: "block",
-              mb: 1,
-              textAlign: "center",
-            }}
-          >
-            STUDIO SAMPLES
-          </Typography>
-          <Typography
-            variant="h4"
-            sx={{
-              fontFamily: '"Space Grotesk", sans-serif',
-              fontWeight: 700,
-              mb: 1,
-              textAlign: "center",
-            }}
-          >
-            Featured Kathmandu Portrait Gallery
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: mode === "dark" ? "#94a3b8" : "#475569",
-              textAlign: "center",
-              maxWidth: "700px",
-              mx: "auto",
-              mb: 6,
-              fontWeight: 300,
-            }}
-          >
-            Take a look at the crisp clarity of our professional captures.
-            Balanced strobe highlights, perfect contrast, and strict biometric
-            framing tolerances.
-          </Typography>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Box
-              sx={{
-                position: "relative",
-                aspectRatio: "3/4",
-                borderRadius: "8px",
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor:
-                  mode === "dark"
-                    ? "rgba(255,255,255,0.08)"
-                    : "rgba(0,0,0,0.06)",
-                boxShadow:
-                  mode === "dark"
-                    ? "0 10px 30px rgba(0,0,0,0.5)"
-                    : "0 10px 20px rgba(0,0,0,0.05)",
-                transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                "&:hover": {
-                  transform: "translateY(-6px)",
-                  borderColor: "#E50914",
-                  boxShadow: "0 15px 30px rgba(229, 9, 20, 0.15)",
-                },
-              }}
-            >
-              <img
-                src="../assets/Gallery/Modeing 5.jpg"
-                alt="Kathmandu Fine-Art Portrait"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                referrerPolicy="no-referrer"
-              />
-              <Box
-                className="image-overlay"
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "end",
-                  p: 3,
-                  transition: "opacity 0.3s ease",
-                }}
-              >
-                <Typography
-                  variant="overline"
-                  sx={{ color: "#E50914", fontWeight: 600, fontSize: "0.7rem" }}
-                >
-                  Modeling
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ color: "#ffffff", fontWeight: 600 }}
-                >
-                  Prerna Shrestha
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: "#cbd5e1", fontWeight: 300, mt: 0.5 }}
-                >
-                  Executive image captured with continuous ring lights.
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                position: "relative",
-                aspectRatio: "3/4",
-                borderRadius: "8px",
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor:
-                  mode === "dark"
-                    ? "rgba(255,255,255,0.08)"
-                    : "rgba(0,0,0,0.06)",
-                boxShadow:
-                  mode === "dark"
-                    ? "0 10px 30px rgba(0,0,0,0.5)"
-                    : "0 10px 20px rgba(0,0,0,0.05)",
-                transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                "&:hover": {
-                  transform: "translateY(-6px)",
-                  borderColor: "#E50914",
-                  boxShadow: "0 15px 30px rgba(229, 9, 20, 0.15)",
-                },
-              }}
-            >
-              <img
-                src="../assets/Gallery/Black.jpg"
-                alt="Kathmandu Studio Headshot"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                referrerPolicy="no-referrer"
-              />
-              <Box
-                className="image-overlay"
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "end",
-                  p: 3,
-                  transition: "opacity 0.3s ease",
-                }}
-              >
-                <Typography
-                  variant="overline"
-                  sx={{ color: "#E50914", fontWeight: 600, fontSize: "0.7rem" }}
-                >
-                  Creative Photoshoot
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ color: "#ffffff", fontWeight: 600 }}
-                >
-                  Rohan Adhikari
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: "#cbd5e1", fontWeight: 300, mt: 0.5 }}
-                >
-                  Black and White Photoshoot.
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                position: "relative",
-                aspectRatio: "3/4",
-                borderRadius: "8px",
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor:
-                  mode === "dark"
-                    ? "rgba(255,255,255,0.08)"
-                    : "rgba(0,0,0,0.06)",
-                boxShadow:
-                  mode === "dark"
-                    ? "0 10px 30px rgba(0,0,0,0.5)"
-                    : "0 10px 20px rgba(0,0,0,0.05)",
-                transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                "&:hover": {
-                  transform: "translateY(-6px)",
-                  borderColor: "#E50914",
-                  boxShadow: "0 15px 30px rgba(229, 9, 20, 0.15)",
-                },
-              }}
-            >
-              <img
-                src="../assets/Gallery/Birthday.jpg"
-                alt="Kathmandu Fine-Art Portrait"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                referrerPolicy="no-referrer"
-              />
-              <Box
-                className="image-overlay"
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "end",
-                  p: 3,
-                  transition: "opacity 0.3s ease",
-                }}
-              >
-                <Typography
-                  variant="overline"
-                  sx={{ color: "#E50914", fontWeight: 600, fontSize: "0.7rem" }}
-                >
-                  Birthday
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ color: "#ffffff", fontWeight: 600 }}
-                >
-                  Ananya Gautam
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: "#cbd5e1", fontWeight: 300, mt: 0.5 }}
-                >
-                  Happy Birthday Cutie.
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                position: "relative",
-                aspectRatio: "3/4",
-                borderRadius: "8px",
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor:
-                  mode === "dark"
-                    ? "rgba(255,255,255,0.08)"
-                    : "rgba(0,0,0,0.06)",
-                boxShadow:
-                  mode === "dark"
-                    ? "0 10px 30px rgba(0,0,0,0.5)"
-                    : "0 10px 20px rgba(0,0,0,0.05)",
-                transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                "&:hover": {
-                  transform: "translateY(-6px)",
-                  borderColor: "#E50914",
-                  boxShadow: "0 15px 30px rgba(229, 9, 20, 0.15)",
-                },
-              }}
-            >
-              <img
-                src="../assets/Gallery/bride 2.jpg"
-                alt="Kathmandu Editorial Photography"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                referrerPolicy="no-referrer"
-              />
-              <Box
-                className="image-overlay"
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "end",
-                  p: 3,
-                  transition: "opacity 0.3s ease",
-                }}
-              >
-                <Typography
-                  variant="overline"
-                  sx={{ color: "#E50914", fontWeight: 600, fontSize: "0.7rem" }}
-                >
-                  Creative Lighting
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ color: "#ffffff", fontWeight: 600 }}
-                >
-                  Tenzing Lama
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: "#cbd5e1", fontWeight: 300, mt: 0.5 }}
-                >
-                  Bride makeup photoshoot in wedding.
-                </Typography>
-              </Box>
-            </Box>
-          </div>
-
-          <Box sx={{ textAlign: "center", mt: 5 }}>
-            <Button
-              variant="outlined"
-              onClick={() => handleScrollToSection("portfolio")}
-              sx={{
-                color: mode === "dark" ? "#ffffff" : "#0f172a",
-                borderColor:
-                  mode === "dark"
-                    ? "rgba(255,255,255,0.15)"
-                    : "rgba(0,0,0,0.15)",
-                fontFamily: '"Space Grotesk", sans-serif',
-                fontWeight: 600,
-                textTransform: "none",
-                px: 4,
-                py: 1.25,
-                borderRadius: "4px",
-                transition: "all 0.3s",
-                "&:hover": {
-                  borderColor: "#E50914",
-                  backgroundColor: "rgba(229, 9, 20, 0.05)",
-                  transform: "translateY(-1px)",
-                },
-              }}
-            >
-              Show More Portraits
-            </Button>
-          </Box>
-        </Container>
-      </Box>
-    </Box>
-  );
-
   return (
     <Box
       sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
@@ -616,80 +134,46 @@ function AppContent() {
 
       <Box sx={{ flexGrow: 1, pb: 4 }}>
         <Routes>
-          <Route path="/" element={renderHomePage()} />
+          <Route
+            path="/"
+            element={<HomePage onNavigate={handleScrollToSection} />}
+          />
           <Route
             path="/services"
             element={
-              <Box id="page-services">
-                <ServiceCatalog
-                  onSelectServiceForBooking={handleBookingRedirect}
-                />
-              </Box>
+              <ServicesPage onSelectServiceForBooking={handleBookingRedirect} />
             }
           />
-          <Route
-            path="/portfolio"
-            element={
-              <Box id="page-portfolio">
-                <PortfolioGrid />
-              </Box>
-            }
-          />
-          <Route
-            path="/faqs"
-            element={
-              <Box id="page-faqs">
-                <FaqSection />
-              </Box>
-            }
-          />
-          <Route
-            path="/contact"
-            element={
-              <Box id="page-contact">
-                <ContactSection />
-              </Box>
-            }
-          />
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/faqs" element={<FaqsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/video" element={<VideoSection />} />
           <Route
             path="/visa-guides"
             element={
-              <Box id="page-visa-guides">
-                <VisaGuides
-                  onScrollToResizer={() => handleScrollToSection("resizer")}
-                />
-                <Box sx={{ mt: 4 }}>
-                  <InteractiveResizer />
-                </Box>
-              </Box>
+              <VisaGuidesPage
+                onScrollToResizer={() => handleScrollToSection("resizer")}
+              />
             }
           />
-          <Route
-            path="/resizer"
-            element={
-              <Box id="page-resizer">
-                <InteractiveResizer />
-              </Box>
-            }
-          />
+          <Route path="/resizer" element={<ResizerPage />} />
           <Route
             path="/pricing"
             element={
-              <Box id="page-pricing">
-                <PricingSection onBookPricingPackage={handleBookingRedirect} />
-              </Box>
+              <PricingPage onBookPricingPackage={handleBookingRedirect} />
             }
           />
           <Route
             path="/book"
-            element={
-              <Box id="page-book-session">
-                <BookingPortal initialServiceId={bookingServiceId} />
-              </Box>
-            }
+            element={<BookingPage initialServiceId={bookingServiceId} />}
           />
+          {/* Admin Dashboard Route */}
+          <Route path="/admin/*" element={<AdminRoutes />} />
           {/* Catch-all Routing Redirect back to Home */}
-          <Route path="*" element={renderHomePage()} />
+          <Route
+            path="*"
+            element={<HomePage onNavigate={handleScrollToSection} />}
+          />
         </Routes>
       </Box>
 
