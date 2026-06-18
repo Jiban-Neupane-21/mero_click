@@ -58,7 +58,7 @@ export default function AdminPanel({
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [alertInfo, setAlertInfo] = useState<{
-    type: "success" | "error";
+    type: "success" | "error" | "info" | "warning";
     message: string;
   } | null>(null);
 
@@ -103,7 +103,10 @@ export default function AdminPanel({
     loadDatabaseItems();
   }, []);
 
-  const triggerAlert = (type: "success" | "error", message: string) => {
+  const triggerAlert = (
+    type: "success" | "error" | "info" | "warning",
+    message: string,
+  ) => {
     setAlertInfo({ type, message });
     setTimeout(() => setAlertInfo(null), 5000);
   };
@@ -118,28 +121,16 @@ export default function AdminPanel({
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      setUploadProgress(true);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPortfolioForm((p) => ({ ...p, imageUrl: reader.result as string }));
-        setUploadProgress(false);
-        triggerAlert(
-          "success",
-          `Image "${file.name}" loaded and processed locally! Ready to insert.`,
-        );
-      };
-      reader.onerror = () => {
-        setUploadProgress(false);
-        triggerAlert("error", "Error reading uploaded file.");
-      };
-      reader.readAsDataURL(file);
+      // Generate a temporary local URL for preview
+      const objectUrl = URL.createObjectURL(file);
+      setPortfolioForm((p) => ({ ...p, imageUrl: objectUrl }));
+      triggerAlert("success", `Image "${file.name}" ready to upload.`);
     }
   };
 
   const handleSavePortfolio = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!portfolioForm.title || !portfolioForm.imageUrl) {
+    if (!portfolioForm.title || (!portfolioForm.imageUrl && !imageFile)) {
       triggerAlert(
         "error",
         "Please provide a title and select/upload an image.",
@@ -148,10 +139,19 @@ export default function AdminPanel({
     }
 
     try {
+      let finalImageUrl = portfolioForm.imageUrl;
+
+      if (imageFile) {
+        setUploadProgress(true);
+        triggerAlert("info", "Uploading image...");
+        finalImageUrl = await apiService.uploadImage(imageFile);
+        setUploadProgress(false);
+      }
+
       await apiService.savePortfolioItem({
         title: portfolioForm.title,
         category: portfolioForm.category as any,
-        imageUrl: portfolioForm.imageUrl,
+        imageUrl: finalImageUrl,
         specLabel: portfolioForm.specLabel || undefined,
         author: portfolioForm.author || undefined,
       });
@@ -172,6 +172,7 @@ export default function AdminPanel({
       loadDatabaseItems();
       if (onDataChange) onDataChange();
     } catch (err: any) {
+      setUploadProgress(false);
       triggerAlert("error", err.message || "Error inserting photo record.");
     }
   };

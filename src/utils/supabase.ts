@@ -5,10 +5,8 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { PortfolioItem, VideoItem } from "../types";
-import {  STUDIO_VIDEOS } from "../data/StudioVideos";
-import {  PORTFOLIO_ITEMS, } from "../data/portfolioItems";
-
-
+import { STUDIO_VIDEOS } from "../data/StudioVideos";
+import { PORTFOLIO_ITEMS } from "../data/portfolioItems";
 
 const metaEnv = (import.meta as any).env || {};
 const supabaseUrl =
@@ -52,6 +50,39 @@ const initializeMockDatabaseIfNeeded = () => {
 initializeMockDatabaseIfNeeded();
 
 export const apiService = {
+  // --- FILE UPLOAD ---
+  async uploadImage(file: File): Promise<string> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("portfolio-images")
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from("portfolio-images")
+          .getPublicUrl(filePath);
+        return data.publicUrl;
+      } catch (err) {
+        console.warn("Supabase storage upload error:", err);
+        throw err;
+      }
+    }
+
+    // Fallback to Base64
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  },
+
   // --- PORTFOLIO ITEMS ---
   async getPortfolioItems(): Promise<PortfolioItem[]> {
     if (isSupabaseConfigured && supabase) {
@@ -61,7 +92,8 @@ export const apiService = {
           .select("*")
           .order("id", { ascending: false });
         if (error) throw error;
-        if (data && data.length > 0) return data as PortfolioItem[];
+        // Return data even if empty to prevent showing hardcoded fallbacks
+        if (data) return data as PortfolioItem[];
       } catch (err) {
         console.warn(
           "Supabase portfolio fetch error, falling back to localStorage:",
@@ -155,7 +187,7 @@ export const apiService = {
           .select("*")
           .order("id", { ascending: false });
         if (error) throw error;
-        if (data && data.length > 0) return data as VideoItem[];
+        if (data) return data as VideoItem[];
       } catch (err) {
         console.warn(
           "Supabase video fetch error, falling back to localStorage:",
