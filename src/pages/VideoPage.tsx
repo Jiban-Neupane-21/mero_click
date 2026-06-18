@@ -17,6 +17,7 @@ import {
   IconButton,
   Dialog,
   Divider,
+  Skeleton,
 } from "@mui/material";
 import {
   Play,
@@ -51,6 +52,7 @@ export default function VideoSection() {
   const [spotlightVideo, setSpotlightVideo] = useState<VideoItem | null>(null);
   const [theaterVideo, setTheaterVideo] = useState<VideoItem | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -62,6 +64,8 @@ export default function VideoSection() {
         }
       } catch (error) {
         console.error("Failed to fetch videos:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchVideos();
@@ -107,6 +111,50 @@ export default function VideoSection() {
       }}
     >
       <Container maxWidth="xl">
+        {loading ? (
+          <Box sx={{ py: { xs: 2, md: 4 } }}>
+            {/* Header Skeleton */}
+            <Box sx={{ textAlign: "center", mb: { xs: 5, md: 8 }, display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <Skeleton variant="rounded" width={180} height={30} sx={{ mb: 2.5, borderRadius: "99px" }} />
+              <Skeleton variant="text" width="60%" height={60} sx={{ mb: 2 }} />
+              <Skeleton variant="text" width="50%" height={24} />
+              <Skeleton variant="text" width="40%" height={24} />
+            </Box>
+
+            {/* Filters Skeleton */}
+            <Box sx={{ display: "flex", gap: 1.25, mb: 6, justifyContent: { xs: "flex-start", md: "center" }, overflow: "hidden" }}>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} variant="rounded" width={120} height={40} sx={{ borderRadius: "100px" }} />
+              ))}
+            </Box>
+
+            {/* Spotlight & Playlist Skeleton */}
+            <Grid container spacing={4} sx={{ mb: 8 }}>
+              <Grid size={{ xs: 12, lg: 8 }}>
+                <Skeleton variant="rounded" width="100%" sx={{ aspectRatio: "16/9", borderRadius: "12px", mb: 2 }} />
+                <Skeleton variant="text" width="40%" height={40} sx={{ mb: 1 }} />
+                <Skeleton variant="text" width="90%" height={20} />
+                <Skeleton variant="text" width="80%" height={20} />
+              </Grid>
+              <Grid size={{ xs: 12, lg: 3 }}>
+                <Skeleton variant="text" width="70%" height={24} sx={{ mb: 3 }} />
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Box key={i} sx={{ display: "flex", gap: 1.5 }}>
+                      <Skeleton variant="rounded" width={100} height={62} sx={{ borderRadius: "4px" }} />
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Skeleton variant="text" width="30%" height={16} sx={{ mb: 0.5 }} />
+                        <Skeleton variant="text" width="90%" height={20} sx={{ mb: 0.5 }} />
+                        <Skeleton variant="text" width="50%" height={16} />
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        ) : (
+          <>
         {/* Animated Header Section */}
         <Box sx={{ textAlign: "center", mb: { xs: 5, md: 8 } }}>
           <Box
@@ -905,6 +953,8 @@ export default function VideoSection() {
             </Grid>
           </Grid>
         </Box>
+        </>
+        )}
       </Container>
 
       {/* FULLSTAGE THEATER MODE INTERACTIVE OVERLAY MODAL */}
