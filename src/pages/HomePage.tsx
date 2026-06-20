@@ -7,6 +7,11 @@ import React from "react";
 import { Box, Container, Typography, Button, useTheme } from "@mui/material";
 import Hero from "../components/Hero";
 
+import modeling5 from "../assets/Gallery/Modeling 5.jpg";
+import black from "../assets/Gallery/Black.jpg";
+import birthday from "../assets/Gallery/Birthday.jpg";
+import bride2 from "../assets/Gallery/bride 2.jpg";
+
 interface HomePageProps {
   onNavigate: (sectionId: string) => void;
 }
@@ -63,25 +68,25 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[
             {
-              src: "../assets/Gallery/Modeing 5.jpg",
+              src: modeling5,
               overline: "Modeling",
               title: "Prerna Shrestha",
               caption: "Executive image captured with continuous ring lights.",
             },
             {
-              src: "../assets/Gallery/Black.jpg",
+              src: black,
               overline: "Creative Photoshoot",
               title: "Rohan Adhikari",
               caption: "Black and White Photoshoot.",
             },
             {
-              src: "../assets/Gallery/Birthday.jpg",
+              src: birthday,
               overline: "Birthday",
               title: "Ananya Gautam",
               caption: "Happy Birthday Cutie.",
             },
             {
-              src: "../assets/Gallery/bride 2.jpg",
+              src: bride2,
               overline: "Creative Lighting",
               title: "Tenzing Lama",
               caption: "Bride makeup photoshoot in wedding.",

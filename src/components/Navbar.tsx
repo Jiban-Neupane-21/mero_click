@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { ColorModeContext } from "../App";
 import { useNavigate, useLocation } from "react-router-dom";
+import logo from "../assets/Mero Click.png";
 
 export interface StudioService {
   id: string;
@@ -256,7 +257,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   boxShadow: "0 4px 14px rgba(229, 9, 20, 0.35)",
                 }}
               >
-                <img src="/assets/Mero Click.png" alt="Studio Mero Click" />
+                <img src={logo} alt="Studio Mero Click" />
               </Box>
               <Box>
                 <Typography

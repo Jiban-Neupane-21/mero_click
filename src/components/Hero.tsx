@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 
+import HeroImg from "../assets/Gallery/Modeling 4.jpg";
 interface HeroProps {
   onNavigate: (section: string) => void;
 }
@@ -398,12 +399,13 @@ export default function Hero({ onNavigate }: HeroProps) {
                   }}
                 >
                   <img
-                    src="../../assets/Gallery/Modeling.jpg"
+                    src={HeroImg}
                     alt="Master Studio Portrait Kathmandu"
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "cover", // This ensures the image covers the container
+                      objectPosition: "top", // This aligns the image to the top
                     }}
                     referrerPolicy="no-referrer"
                   />
