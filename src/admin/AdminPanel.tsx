@@ -38,9 +38,12 @@ import {
   AlertCircle,
   KeyRound,
   ExternalLink,
+  Sparkles,
+  Edit,
+  Clock
 } from "lucide-react";
 import { apiService, isSupabaseConfigured } from "../utils/supabase";
-import { PortfolioItem, VideoItem } from "../types";
+import { PortfolioItem, VideoItem, StudioService } from "../types";
 
 interface AdminPanelProps {
   userEmail: string;
@@ -56,6 +59,7 @@ export default function AdminPanel({
   const [activeTab, setActiveTab] = useState(0);
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
   const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [services, setServices] = useState<StudioService[]>([]);
   const [loading, setLoading] = useState(true);
   const [alertInfo, setAlertInfo] = useState<{
     type: "success" | "error" | "info" | "warning";
@@ -81,6 +85,19 @@ export default function AdminPanel({
     description: "",
   });
 
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [serviceForm, setServiceForm] = useState({
+    title: '',
+    category: 'Portrait',
+    basePrice: '',
+    duration: '',
+    description: '',
+    rating: 5.0,
+    imageUrl: '',
+    featuresText: '',
+  });
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(false);
 
@@ -90,8 +107,10 @@ export default function AdminPanel({
     try {
       const fetchedPortfolios = await apiService.getPortfolioItems();
       const fetchedVideos = await apiService.getVideoItems();
+      const fetchedServices = await apiService.getServices();
       setPortfolios(fetchedPortfolios);
       setVideos(fetchedVideos);
+      setServices(fetchedServices);
     } catch (err: any) {
       console.error("Error fetching admin dataset:", err);
     } finally {
@@ -274,6 +293,123 @@ export default function AdminPanel({
     }
   };
 
+  // --- STUDIO SERVICES ACTIONS ---
+  const handleServiceFormChange = (prop: string, val: any) => {
+    setServiceForm((prev) => ({ ...prev, [prop]: val }));
+  };
+
+  const handleEditService = (service: StudioService) => {
+    setEditingServiceId(service.id);
+    setServiceForm({
+      title: service.title,
+      category: service.category,
+      basePrice: service.basePrice,
+      duration: service.duration,
+      description: service.description,
+      rating: service.rating || 5.0,
+      imageUrl: service.imageUrl,
+      featuresText: Array.isArray(service.features)
+        ? service.features.join("\n")
+        : "",
+    });
+    setIsServiceModalOpen(true);
+    setImageFile(null);
+  };
+
+  const handleAddServiceClick = () => {
+    setEditingServiceId(null);
+    setServiceForm({
+      title: "",
+      category: "Portrait",
+      basePrice: "",
+      duration: "",
+      description: "",
+      rating: 5.0,
+      imageUrl: "",
+      featuresText: "",
+    });
+    setIsServiceModalOpen(true);
+    setImageFile(null);
+  };
+
+  const handleSaveService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (
+      !serviceForm.title ||
+      (!serviceForm.imageUrl && !imageFile) ||
+      !serviceForm.basePrice ||
+      !serviceForm.duration
+    ) {
+      triggerAlert(
+        "error",
+        "Please provide title, base price, duration, and select/upload an image.",
+      );
+      return;
+    }
+
+    const features = serviceForm.featuresText
+      .split("\n")
+      .map((x) => x.trim())
+      .filter(Boolean);
+
+    try {
+      let finalImageUrl = serviceForm.imageUrl;
+
+      if (imageFile) {
+        setUploadProgress(true);
+        triggerAlert("info", "Uploading image...");
+        finalImageUrl = await apiService.uploadImage(imageFile);
+        setUploadProgress(false);
+      }
+
+      await apiService.saveServiceItem({
+        id: editingServiceId || undefined,
+        title: serviceForm.title,
+        category: serviceForm.category as any,
+        basePrice: serviceForm.basePrice,
+        duration: serviceForm.duration,
+        description: serviceForm.description,
+        features: features,
+        rating: Number(serviceForm.rating) || 5.0,
+        imageUrl: finalImageUrl,
+      });
+
+      triggerAlert(
+        "success",
+        editingServiceId
+          ? "Successfully updated studio service details!"
+          : "Successfully created new studio service!",
+      );
+      setIsServiceModalOpen(false);
+      setImageFile(null);
+      loadDatabaseItems();
+      if (onDataChange) onDataChange();
+    } catch (err: any) {
+      setUploadProgress(false);
+      triggerAlert("error", err.message || "Error saving service details.");
+    }
+  };
+
+  const handleDeleteService = async (id: string, title: string) => {
+    if (
+      window.confirm(
+        `Are you sure you want to permanently delete service "${title}" from Kathmandu active specialties?`,
+      )
+    ) {
+      try {
+        await apiService.deleteServiceItem(id);
+        triggerAlert(
+          "success",
+          `Deleted studio service "${title}" successfully.`,
+        );
+        loadDatabaseItems();
+        if (onDataChange) onDataChange();
+      } catch (err: any) {
+        triggerAlert("error", err.message || "Error deleting service.");
+      }
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -431,6 +567,7 @@ export default function AdminPanel({
               label="Manage Cinematic Videos"
               iconPosition="start"
             />
+            <Tab icon={<Sparkles size={18} />} label="Manage Studio Specialties" iconPosition="start" />
           </Tabs>
         </Box>
 
@@ -797,6 +934,269 @@ export default function AdminPanel({
                               "&:hover": {
                                 backgroundColor: "rgba(244,63,94,0.08)",
                               },
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </IconButton>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Box>
+        )}
+
+        {/* ==================================== STUDIO SERVICES VIEW ==================================== */}
+        {activeTab === 2 && (
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+                flexWrap: "wrap",
+                gap: 1.5,
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600 }}
+              >
+                Active Studio Specialties / Services ({services.length} active)
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={handleAddServiceClick}
+                startIcon={<PlusCircle size={16} />}
+                sx={{
+                  backgroundColor: "#E50914",
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: "none",
+                  borderRadius: "6px",
+                  fontWeight: 600,
+                  "&:hover": { backgroundColor: "#b91c1c" },
+                }}
+              >
+                Add Studio Specialty
+              </Button>
+            </Box>
+
+            {loading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                <CircularProgress sx={{ color: "#E50914" }} />
+              </Box>
+            ) : services.length === 0 ? (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 8,
+                  border: "1px dashed rgba(255,255,255,0.1)",
+                  borderRadius: "8px",
+                }}
+              >
+                <Typography color="textSecondary">
+                  No custom studio specialties defined yet.
+                </Typography>
+              </Box>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {services.map((item) => (
+                  <div key={item.id}>
+                    <Card
+                      sx={{
+                        background: "#121214",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        transition: "transform 0.2s",
+                        "&:hover": { transform: "scale(1.01)" },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: "relative",
+                          aspectRatio: "16/9",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <Box sx={{ position: "absolute", top: 8, left: 8 }}>
+                          <Chip
+                            label={item.category}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(0,0,0,0.85)",
+                              color: "#ffffff",
+                              border: "1px solid rgba(255,255,255,0.15)",
+                              fontSize: "0.65rem",
+                              fontWeight: 700,
+                            }}
+                          />
+                        </Box>
+                        {item.duration && (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              bottom: 8,
+                              right: 8,
+                              backgroundColor: "rgba(0,0,0,0.8)",
+                              color: "#ffffff",
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: "3px",
+                              fontSize: "0.7rem",
+                              fontWeight: 650,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                            }}
+                          >
+                            <Clock size={10} className="text-[#E50914]" />
+                            {item.duration}
+                          </Box>
+                        )}
+                      </Box>
+                      <CardContent
+                        sx={{
+                          p: 2.5,
+                          flexGrow: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Box>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontWeight: 700,
+                              mb: 1,
+                              lineHeight: 1.3,
+                              color: "#ffffff",
+                            }}
+                          >
+                            {item.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: "rgba(255,255,255,0.6)",
+                              mb: 2,
+                              fontSize: "0.82rem",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {item.description}
+                          </Typography>
+                          <div className="flex justify-between items-center bg-[#18181c] p-2.5 rounded border border-white/[0.04] mb-3">
+                            <Typography
+                              variant="caption"
+                              sx={{ color: "rgba(255,255,255,0.5)" }}
+                            >
+                              Base Pricing:
+                            </Typography>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{ color: "#E50914", fontWeight: 700 }}
+                            >
+                              {item.basePrice}
+                            </Typography>
+                          </div>
+
+                          {/* Features Preview */}
+                          {item.features && item.features.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: "rgba(255,255,255,0.4)",
+                                  textTransform: "uppercase",
+                                  fontSize: "0.65rem",
+                                  fontWeight: 700,
+                                  letterSpacing: "0.05em",
+                                }}
+                              >
+                                Included Features Preview:
+                              </Typography>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {(Array.isArray(item.features) ? item.features : [])
+                                  .slice(0, 3)
+                                  .map((f: string, i: number) => (
+                                    <Chip
+                                      key={i}
+                                      label={f}
+                                      size="small"
+                                      sx={{
+                                        backgroundColor: "rgba(255,255,255,0.04)",
+                                        color: "rgba(255,255,255,0.7)",
+                                        fontSize: "0.65rem",
+                                      }}
+                                    />
+                                  ))}
+                                {(Array.isArray(item.features) ? item.features : [])
+                                  .length > 3 && (
+                                  <Chip
+                                    label={`+${item.features.length - 3} more`}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: "rgba(255,255,255,0.04)",
+                                      color: "rgba(255,255,255,0.5)",
+                                      fontSize: "0.65rem",
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            </Box>
+                          )}
+                        </Box>
+
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 2,
+                            pt: 1.5,
+                            borderTop: "1px solid rgba(255,255,255,0.05)",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => handleEditService(item)}
+                            startIcon={<Edit size={14} />}
+                            sx={{
+                              color: "#38bdf8",
+                              textTransform: "none",
+                              fontFamily: '"Space Grotesk"',
+                              fontSize: "0.75rem",
+                            }}
+                          >
+                            Edit Features
+                          </Button>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteService(item.id, item.title)}
+                            sx={{
+                              color: "#f43f5e",
+                              "&:hover": { backgroundColor: "rgba(244,63,94,0.08)" },
                             }}
                           >
                             <Trash2 size={16} />
@@ -1333,6 +1733,395 @@ export default function AdminPanel({
                 }}
               >
                 Log Film Video
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
+
+        {/* ==================================== MODAL DIALOG: ADD/EDIT STUDIO SERVICE ==================================== */}
+        <Dialog
+          open={isServiceModalOpen}
+          onClose={() => setIsServiceModalOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          sx={{
+            "& .MuiPaper-root": {
+              backgroundColor: "#18181b",
+              backgroundImage: "none",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "12px",
+              color: "#ffffff",
+            },
+          }}
+        >
+          <Box component="form" onSubmit={handleSaveService}>
+            <DialogTitle
+              sx={{
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
+                fontFamily: '"Space Grotesk"',
+                fontWeight: 700,
+              }}
+            >
+              {editingServiceId
+                ? "Edit Active Service Specialty"
+                : "Add New Active Service Specialty"}
+            </DialogTitle>
+            <DialogContent sx={{ p: 4 }}>
+              <TextField
+                fullWidth
+                label="Service / Specialty Title"
+                placeholder="e.g. Cinematic Wedding Motion Film"
+                margin="normal"
+                required
+                value={serviceForm.title}
+                onChange={(e) => handleServiceFormChange("title", e.target.value)}
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <TextField
+                  select
+                  fullWidth
+                  label="Category Name"
+                  margin="none"
+                  required
+                  value={serviceForm.category}
+                  onChange={(e) => handleServiceFormChange("category", e.target.value)}
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                >
+                  {[
+                    "Visa",
+                    "Portrait",
+                    "Wedding",
+                    "Videography",
+                    "Photo Frame",
+                    "Product",
+                    "Photography",
+                    "Photo Enhancement",
+                    "Customized Gift",
+                    "Document Service",
+                  ].map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  fullWidth
+                  label="Rating (1.0 to 5.0)"
+                  type="number"
+                  placeholder="4.9"
+                  margin="none"
+                  required
+                  value={serviceForm.rating}
+                  onChange={(e) => handleServiceFormChange("rating", e.target.value)}
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                    htmlInput: { min: 1.0, max: 5.0, step: 0.1 },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <TextField
+                  fullWidth
+                  label="Base Price (with currency symbol)"
+                  placeholder="Rs. 45,000"
+                  margin="none"
+                  required
+                  value={serviceForm.basePrice}
+                  onChange={(e) => handleServiceFormChange("basePrice", e.target.value)}
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Duration Label"
+                  placeholder="e.g. 1 hour / 3 days"
+                  margin="none"
+                  required
+                  value={serviceForm.duration}
+                  onChange={(e) => handleServiceFormChange("duration", e.target.value)}
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+              </div>
+
+              <Box
+                sx={{
+                  mt: 3,
+                  mb: 1,
+                  border: "1px dashed rgba(229, 9, 20, 0.25)",
+                  p: 2.5,
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(229,9,20,0.02)",
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1.5,
+                    fontFamily: '"Space Grotesk"',
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Upload size={16} className="text-[#E50914]" /> Select Image
+                  Source
+                </Typography>
+
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<Upload size={14} />}
+                  disabled={uploadProgress}
+                  sx={{
+                    width: "100%",
+                    mb: 2.5,
+                    color: "#ffffff",
+                    borderColor: "rgba(255,255,255,0.15)",
+                    textTransform: "none",
+                    fontFamily: '"Space Grotesk"',
+                    "&:hover": {
+                      borderColor: "#E50914",
+                      backgroundColor: "rgba(229,9,20,0.05)",
+                    },
+                  }}
+                >
+                  {uploadProgress
+                    ? "Reading raw file data..."
+                    : "Upload Image / Drop local photo"}
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleImageFileChange}
+                  />
+                </Button>
+
+                <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.08)" }}>
+                  OR
+                </Divider>
+
+                <TextField
+                  fullWidth
+                  label="Alternative Web Image URL (Unsplash etc.)"
+                  placeholder="https://images.unsplash.com/..."
+                  value={serviceForm.imageUrl}
+                  onChange={(e) => handleServiceFormChange("imageUrl", e.target.value)}
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: {
+                      style: { color: "#ffffff" },
+                      startAdornment: (
+                        <IconButton
+                          size="small"
+                          edge="start"
+                          sx={{ color: "rgba(255,255,255,0.4)" }}
+                        >
+                          <LinkIcon size={14} />
+                        </IconButton>
+                      ),
+                    },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+              </Box>
+
+              {serviceForm.imageUrl && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 1.5,
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: "6px",
+                    textAlign: "center",
+                    backgroundColor: "#121214",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "rgba(255,255,255,0.4)",
+                      mb: 1,
+                      display: "block",
+                    }}
+                  >
+                    Image Preview
+                  </Typography>
+                  <img
+                    src={serviceForm.imageUrl}
+                    alt="Preview"
+                    style={{
+                      maxHeight: "140px",
+                      maxWidth: "100%",
+                      margin: "0 auto",
+                      borderRadius: "4px",
+                      objectFit: "contain",
+                    }}
+                  />
+                </Box>
+              )}
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Service Outline / Description"
+                placeholder="Describe service outputs, resolutions, camera bodies used..."
+                margin="normal"
+                required
+                value={serviceForm.description}
+                onChange={(e) => handleServiceFormChange("description", e.target.value)}
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Features List (Put each feature on a separate new line)"
+                placeholder="4K Multi-angle cinematic cameras&#10;Professional editing suite adjustments&#10;Delivered in physical drives within 7 days"
+                margin="normal"
+                value={serviceForm.featuresText}
+                onChange={(e) =>
+                  handleServiceFormChange("featuresText", e.target.value)
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+            </DialogContent>
+            <DialogActions sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+              <Button
+                onClick={() => setIsServiceModalOpen(false)}
+                sx={{ color: "#a1a1aa" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#E50914",
+                  "&:hover": { backgroundColor: "#b91c1c" },
+                }}
+              >
+                {editingServiceId ? "Update Service" : "Activate Service"}
               </Button>
             </DialogActions>
           </Box>

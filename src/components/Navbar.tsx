@@ -49,6 +49,7 @@ import {
   Heart,
   Image as ImageIcon,
   VideoIcon,
+  Lock,
 } from "lucide-react";
 import { ColorModeContext } from "../App";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -575,6 +576,28 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   {isDark ? <Sun size={18} /> : <Moon size={18} />}
                 </IconButton>
 
+                {/* Secret Admin Button */}
+                <IconButton
+                  onClick={() => {
+                    navigate("/admin");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  id="nav-admin-secret-desktop"
+                  sx={{
+                    ml: 0.5,
+                    color: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                    "&:hover": {
+                      color: "#E50914",
+                      backgroundColor: "transparent"
+                    },
+                    width: 24,
+                    height: 24
+                  }}
+                  disableRipple
+                >
+                  <Lock size={12} />
+                </IconButton>
+
                 {/* Call-to-action Book Button */}
                 <Button
                   variant="contained"
@@ -629,6 +652,30 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                 >
                   {isDark ? <Sun size={18} /> : <Moon size={18} />}
                 </IconButton>
+
+                {/* Secret Admin Button */}
+                <IconButton
+                  onClick={() => {
+                    navigate("/admin");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  id="nav-admin-secret-mobile"
+                  sx={{
+                    ml: 0.5,
+                    mr: 1,
+                    color: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                    "&:hover": {
+                      color: "#E50914",
+                      backgroundColor: "transparent"
+                    },
+                    width: 24,
+                    height: 24
+                  }}
+                  disableRipple
+                >
+                  <Lock size={12} />
+                </IconButton>
+
                 <IconButton
                   color="inherit"
                   aria-label="open drawer"

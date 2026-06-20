@@ -27,14 +27,27 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
-  const categories = [
-    { id: "all", label: "All Projects" },
-    { id: "Portrait", label: "Executive Portraits" },
-    { id: "Visa", label: "Visa & Biometrics" },
-    { id: "Product", label: "Product & Catalog" },
-    { id: "Event", label: "Celebration Events" },
-    { id: "Studio", label: "Studio & Gear" },
-  ];
+  const categories = React.useMemo(() => {
+    const list = [
+      { id: "all", label: "All Projects" },
+      { id: "Portrait", label: "Executive Portraits" },
+      { id: "Visa", label: "Visa & Biometrics" },
+      { id: "Product", label: "Product & Catalog" },
+      { id: "Event", label: "Celebration Events" },
+      { id: "Studio", label: "Studio & Gear" },
+      { id: "Wedding", label: "Wedding Photography" },
+      { id: "Videography", label: "Videography" },
+      { id: "Photo Frame", label: "Photo Frames" },
+    ];
+    const existingIds = new Set(list.map((c) => c.id.toLowerCase()));
+    items.forEach((item) => {
+      if (item.category && !existingIds.has(item.category.toLowerCase())) {
+        list.push({ id: item.category, label: item.category });
+        existingIds.add(item.category.toLowerCase());
+      }
+    });
+    return list;
+  }, [items]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
