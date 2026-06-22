@@ -22,6 +22,8 @@ import {
   useTheme,
   CircularProgress,
 } from "@mui/material";
+import emailjs from "@emailjs/browser";
+
 import { Clock, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
 import { BookingDetails, StudioService } from "../types";
 import { apiService } from "../utils/supabase";
@@ -39,6 +41,8 @@ export default function BookingPortal({
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
   const [activeStep, setActiveStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
 
   const [services, setServices] = useState<StudioService[]>([]);
   const [loading, setLoading] = useState(true);
@@ -216,7 +220,11 @@ export default function BookingPortal({
     }
   };
 
-  const handleBookingSubmit = () => {
+
+  const handleBookingSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError("");
+
     const finalDetails: BookingDetails = {
       serviceId: selectedService,
       packageName:
@@ -234,12 +242,53 @@ export default function BookingPortal({
       addons: activeAddons.filter((a) => a.checked).map((a) => a.label),
       totalPrice,
     };
-    if (onBookingComplete) {
-      onBookingComplete(finalDetails);
-    }
-    handleNext();
-  };
 
+    try {
+      await emailjs.send(
+        "service_9rtfyi5",  // service id
+        "template_ep9aanz",//template id
+        {
+          client_name: clientName,
+          client_email: clientEmail,
+          to_email: clientEmail, // Often used in EmailJS templates for dynamic 'To' address
+          // email: "studiomeroclick@gmail.com", // Another common variable name
+
+          email: clientEmail,
+          reply_to: clientEmail,
+          client_phone: clientPhone,
+          package_name: finalDetails.packageName,
+          booking_date: new Date(selectedDate).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }),
+          venue:
+            selectedService === "service-wedding-shoot"
+              ? weddingVenue || "To be decided"
+              : "N/A — In-studio session",
+          addons:
+            finalDetails.addons.length > 0
+              ? finalDetails.addons.join(", ")
+              : "None selected",
+          total_price: totalPrice.toLocaleString(),
+          notes: notes || "None provided",
+        },
+        "BLbQPhNLl6x16IE1a", //public key
+      );
+
+      if (onBookingComplete) {
+        onBookingComplete(finalDetails);
+      }
+      handleNext();
+    } catch (err) {
+      console.error("EmailJS send failed:", err);
+      setSubmitError(
+        "We couldn't notify the studio right now, but you can still try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
     <Box
       sx={{
@@ -832,7 +881,7 @@ export default function BookingPortal({
                   </Box>
                 </div>
 
-                
+
               </div>
 
               <Box
@@ -1107,9 +1156,18 @@ export default function BookingPortal({
                 >
                   Back
                 </Button>
+                {submitError && (
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#ff4d4d", display: "block", mb: 2, textAlign: "center" }}
+                  >
+                    {submitError}
+                  </Typography>
+                )}
                 <Button
                   variant="contained"
                   onClick={handleBookingSubmit}
+                  disabled={isSubmitting}
                   id="final-booking-submit-btn"
                   sx={{
                     fontFamily: '"Space Grotesk", sans-serif',
@@ -1121,7 +1179,7 @@ export default function BookingPortal({
                     px: 4,
                   }}
                 >
-                  Reserve Session
+                  {isSubmitting ? "Sending..." : "Reserve Session"}
                 </Button>
               </Box>
             </Box>
