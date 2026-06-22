@@ -4,9 +4,10 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { PortfolioItem, VideoItem } from "../types";
+import { PortfolioItem, VideoItem, StudioService } from "../types";
 import { STUDIO_VIDEOS } from "../data/StudioVideos";
 import { PORTFOLIO_ITEMS } from "../data/portfolioItems";
+import { STUDIO_SERVICES } from "../data";
 
 const metaEnv = (import.meta as any).env || {};
 const supabaseUrl =
@@ -34,6 +35,7 @@ export const supabase = isSupabaseConfigured
  */
 const STORAGE_PORTFOLIO_KEY = "kathmandu_studio_portfolio";
 const STORAGE_VIDEOS_KEY = "kathmandu_studio_videos";
+const STORAGE_SERVICES_KEY = "kathmandu_studio_services";
 
 const initializeMockDatabaseIfNeeded = () => {
   if (!localStorage.getItem(STORAGE_PORTFOLIO_KEY)) {
@@ -44,6 +46,9 @@ const initializeMockDatabaseIfNeeded = () => {
   }
   if (!localStorage.getItem(STORAGE_VIDEOS_KEY)) {
     localStorage.setItem(STORAGE_VIDEOS_KEY, JSON.stringify(STUDIO_VIDEOS));
+  }
+  if (!localStorage.getItem(STORAGE_SERVICES_KEY)) {
+    localStorage.setItem(STORAGE_SERVICES_KEY, JSON.stringify(STUDIO_SERVICES));
   }
 };
 
@@ -273,4 +278,89 @@ export const apiService = {
     }
     return false;
   },
+
+  // --- STUDIO SERVICES ---
+  async getServices(): Promise<StudioService[]> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('*')
+          .order('id', { ascending: true });
+        if (error) throw error;
+        // Return data even if empty to prevent showing hardcoded fallbacks
+        if (data) return data as StudioService[];
+      } catch (err) {
+        console.warn('Supabase services fetch error, falling back to localStorage:', err);
+      }
+    }
+
+    // Fallback to localStorage
+    const stored = localStorage.getItem(STORAGE_SERVICES_KEY);
+    return stored ? JSON.parse(stored) : STUDIO_SERVICES;
+  },
+
+  async saveServiceItem(service: Omit<StudioService, 'id'> & { id?: string }): Promise<StudioService> {
+    const newService: StudioService = {
+      id: service.id || `s_${Date.now()}`,
+      title: service.title,
+      category: service.category,
+      basePrice: service.basePrice,
+      duration: service.duration,
+      description: service.description,
+      features: service.features || [],
+      rating: service.rating ?? 5.0,
+      imageUrl: service.imageUrl
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .upsert(newService)
+          .select()
+          .single();
+        if (error) throw error;
+        if (data) return data as StudioService;
+      } catch (err) {
+        console.warn('Supabase service insert/update error, falling back to localStorage:', err);
+      }
+    }
+
+    // LocalStorage fallback
+    const stored = localStorage.getItem(STORAGE_SERVICES_KEY);
+    const list: StudioService[] = stored ? JSON.parse(stored) : [...STUDIO_SERVICES];
+    const index = list.findIndex(x => x.id === newService.id);
+    if (index !== -1) {
+      list[index] = newService;
+    } else {
+      list.push(newService);
+    }
+    localStorage.setItem(STORAGE_SERVICES_KEY, JSON.stringify(list));
+    return newService;
+  },
+
+  async deleteServiceItem(id: string): Promise<boolean> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase
+          .from('services')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+      } catch (err) {
+        console.warn('Supabase service delete error, falling back to localStorage:', err);
+      }
+    }
+
+    // LocalStorage fallback
+    const stored = localStorage.getItem(STORAGE_SERVICES_KEY);
+    if (stored) {
+      const list: StudioService[] = JSON.parse(stored);
+      const filtered = list.filter(s => s.id !== id);
+      localStorage.setItem(STORAGE_SERVICES_KEY, JSON.stringify(filtered));
+      return true;
+    }
+    return false;
+  }
 };

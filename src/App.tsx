@@ -36,6 +36,8 @@ import VideoSection from "./pages/VideoPage";
 import AdminRoutes from "./routes/AdminRoutes";
 import { Camera, MapPin, ExternalLink, Mail, PhoneCall } from "lucide-react";
 
+import logo from "./assets/Mero Click.png";
+
 export const ColorModeContext = createContext({
   mode: "dark" as "dark" | "light",
   toggleColorMode: () => {},
@@ -205,7 +207,7 @@ function AppContent() {
                     mr: 1.5,
                   }}
                 >
-                  <img src="/assets/Mero Click.png" alt="Studio Mero Click" />
+                  <img src={logo} alt="Studio Mero Click" />
                 </Box>
                 <Typography
                   variant="h6"

@@ -27,6 +27,12 @@ import {
   CheckCircle2,
   Navigation,
 } from "lucide-react";
+import {
+  FaFacebook,
+  FaInstagramSquare,
+  FaTiktok,
+  FaYoutube,
+} from "react-icons/fa";
 
 export default function ContactSection() {
   const [name, setName] = useState("");
@@ -657,6 +663,334 @@ export default function ContactSection() {
             </div>
           </div>
         </div>
+        <Box
+          sx={{
+            mt: 5,
+            pt: 4,
+            borderTop: "1px solid",
+            borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+          }}
+          id="contact-socials-block"
+        >
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontWeight: 600,
+              fontSize: "0.8rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              color: "#E50914",
+              mb: 1.5,
+            }}
+          >
+            Follow Our Creative Work
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "text.secondary",
+              fontWeight: 300,
+              mb: 3,
+              lineHeight: 1.5,
+            }}
+          >
+            Catch live backstage production reels, discover professional
+            composition tips, and see our daily cinematic stories on our social
+            feeds.
+          </Typography>
+
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            id="socials-container-grid"
+          >
+            {/* Facebook channel */}
+            <a
+              href="https://www.facebook.com/studiomeroclick"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="no-underline block group"
+              id="social-link-facebook"
+            >
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "6px",
+                  backgroundColor: isDark
+                    ? "rgba(255,255,255,0.02)"
+                    : "rgba(0,0,0,0.02)",
+                  border: "1px solid",
+                  borderColor: isDark
+                    ? "rgba(255,255,255,0.05)"
+                    : "rgba(0,0,0,0.05)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                  "&:hover": {
+                    backgroundColor: "rgba(24, 119, 242, 0.08)",
+                    borderColor: "#1877F2",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 15px rgba(24, 119, 242, 0.15)",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(24, 119, 242, 0.1)",
+                    color: "#1877F2",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FaFacebook size={16} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 600,
+                      color: "text.primary",
+                      display: "block",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    Facebook
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: "0.72rem",
+                      fontWeight: 300,
+                    }}
+                  >
+                    @studiomeroclick
+                  </Typography>
+                </Box>
+              </Box>
+            </a>
+
+            {/* Instagram channel */}
+            <a
+              href="https://www.instagram.com/studiomeroclick"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="no-underline block group"
+              id="social-link-instagram"
+            >
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "6px",
+                  backgroundColor: isDark
+                    ? "rgba(255,255,255,0.02)"
+                    : "rgba(0,0,0,0.02)",
+                  border: "1px solid",
+                  borderColor: isDark
+                    ? "rgba(255,255,255,0.05)"
+                    : "rgba(0,0,0,0.05)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                  "&:hover": {
+                    backgroundColor: "rgba(225, 48, 108, 0.08)",
+                    borderColor: "#E1306C",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 15px rgba(225, 48, 108, 0.15)",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(225, 48, 108, 0.1)",
+                    color: "#E1306C",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FaInstagramSquare size={16} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 600,
+                      color: "text.primary",
+                      display: "block",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    Instagram
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: "0.72rem",
+                      fontWeight: 300,
+                    }}
+                  >
+                    @studiomeroclick
+                  </Typography>
+                </Box>
+              </Box>
+            </a>
+
+            {/* TikTok channel */}
+            <a
+              href="https://www.tiktok.com/@studiomeroclick"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="no-underline block group"
+              id="social-link-tiktok"
+            >
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "6px",
+                  backgroundColor: isDark
+                    ? "rgba(255,255,255,0.02)"
+                    : "rgba(0,0,0,0.02)",
+                  border: "1px solid",
+                  borderColor: isDark
+                    ? "rgba(255,255,255,0.05)"
+                    : "rgba(0,0,0,0.05)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.08)",
+                    borderColor: isDark ? "#ffffff" : "#000000",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 15px rgba(0, 242, 254, 0.15)",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    backgroundColor: isDark
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(0, 0, 0, 0.1)",
+                    color: "text.primary",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FaTiktok size={16} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 600,
+                      color: "text.primary",
+                      display: "block",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    TikTok
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: "0.72rem",
+                      fontWeight: 300,
+                    }}
+                  >
+                    @studiomeroclick
+                  </Typography>
+                </Box>
+              </Box>
+            </a>
+
+            {/* YouTube channel */}
+            <a
+              href="https://www.youtube.com/studiomeroclick"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="no-underline block group"
+              id="social-link-youtube"
+            >
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "6px",
+                  backgroundColor: isDark
+                    ? "rgba(255,255,255,0.02)"
+                    : "rgba(0,0,0,0.02)",
+                  border: "1px solid",
+                  borderColor: isDark
+                    ? "rgba(255,255,255,0.05)"
+                    : "rgba(0,0,0,0.05)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 0, 0, 0.08)",
+                    borderColor: "#FF0000",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 15px rgba(255, 0, 0, 0.15)",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(255, 0, 0, 0.1)",
+                    color: "#FF0000",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FaYoutube size={16} />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 600,
+                      color: "text.primary",
+                      display: "block",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    YouTube
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: "0.72rem",
+                      fontWeight: 300,
+                    }}
+                  >
+                    studiomeroclick
+                  </Typography>
+                </Box>
+              </Box>
+            </a>
+          </div>
+        </Box>
       </Container>
     </Box>
   );

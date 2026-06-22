@@ -19,9 +19,12 @@ import {
   ListItemIcon,
   ListItemText,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import { Check, Clock, Award } from "lucide-react";
 import { STUDIO_SERVICES } from "../data";
+import { apiService } from "../utils/supabase";
+import { StudioService } from "../types";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface ServiceCatalogProps {
@@ -39,19 +42,33 @@ export default function ServiceCatalog({
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "All";
 
-  const categories = [
-    "All",
-    "Visa",
-    "Portrait",
-    "Wedding",
-    "Videography",
-    "Photo Frame",
-    "Product",
-    "Photography",
-    "Photo Enhancement",
-    "Customized Gift",
-    "Document Service",
-  ];
+  const [services, setServices] = React.useState<StudioService[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const categories = React.useMemo(() => {
+    const list = [
+      "All",
+      "Visa",
+      "Portrait",
+      "Wedding",
+      "Videography",
+      "Photo Frame",
+      "Product",
+      "Photography",
+      "Photo Enhancement",
+      "Customized Gift",
+      "Document Service",
+    ];
+    services.forEach((s) => {
+      if (
+        s.category &&
+        !list.some((c) => c.toLowerCase() === s.category.toLowerCase())
+      ) {
+        list.push(s.category);
+      }
+    });
+    return list;
+  }, [services]);
 
   const handleCategoryChange = (category: string) => {
     if (category === "All") {
@@ -63,11 +80,33 @@ export default function ServiceCatalog({
 
   const filteredServices =
     selectedCategory === "All"
-      ? STUDIO_SERVICES
-      : STUDIO_SERVICES.filter(
+      ? services
+      : services.filter(
           (service) =>
             service.category.toLowerCase() === selectedCategory.toLowerCase(),
         );
+
+  React.useEffect(() => {
+    let active = true;
+    const fetchServices = async () => {
+      try {
+        const data = await apiService.getServices();
+        if (active) {
+          setServices(data);
+        }
+      } catch (err) {
+        console.error("Failed to load dynamic studio services:", err);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+    fetchServices();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <Box
@@ -196,7 +235,18 @@ export default function ServiceCatalog({
         </Box>
 
         {/* Services Grid */}
-        {filteredServices.length > 0 ? (
+        {loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              py: 12,
+            }}
+          >
+            <CircularProgress sx={{ color: "#E50914" }} />
+          </Box>
+        ) : filteredServices.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {filteredServices.map((service) => (
               <div key={service.id} className="w-full">
@@ -394,7 +444,20 @@ export default function ServiceCatalog({
                     </Typography>
 
                     <List sx={{ p: 0, mb: 4 }} dense>
-                      {service.features.map((feature, idx) => (
+                      {(Array.isArray(service.features)
+                        ? service.features
+                        : typeof service.features === "string"
+                          ? (() => {
+                              try {
+                                return JSON.parse(service.features);
+                              } catch {
+                                return (service.features as any)
+                                  .split("\n")
+                                  .filter(Boolean);
+                              }
+                            })()
+                          : []
+                      ).map((feature: string, idx: number) => (
                         <ListItem key={idx} sx={{ px: 0, py: 0.5 }}>
                           <ListItemIcon sx={{ minWidth: 24 }}>
                             <Check size={14} className="text-[#E50914]" />

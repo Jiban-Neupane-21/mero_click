@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -20,84 +20,174 @@ import {
   FormControlLabel,
   Divider,
   useTheme,
-} from '@mui/material';
-import { Clock, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
-import { STUDIO_SERVICES } from '../data';
-import { BookingDetails } from '../types';
+  CircularProgress,
+} from "@mui/material";
+import { Clock, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
+import { BookingDetails, StudioService } from "../types";
+import { apiService } from "../utils/supabase";
 
 interface BookingPortalProps {
   initialServiceId?: string;
   onBookingComplete?: (details: BookingDetails) => void;
 }
 
-const TIME_SLOTS = [
-  '10:00 AM - 10:45 AM',
-  '11:00 AM - 11:45 AM',
-  '12:00 PM - 12:45 PM',
-  '01:30 PM - 02:15 PM',
-  '02:30 PM - 03:15 PM',
-  '03:30 PM - 04:15 PM',
-  '04:30 PM - 05:15 PM',
-];
 
-export default function BookingPortal({ initialServiceId, onBookingComplete }: BookingPortalProps) {
+export default function BookingPortal({
+  initialServiceId,
+  onBookingComplete,
+}: BookingPortalProps) {
   const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
+  const isDark = theme.palette.mode === "dark";
   const [activeStep, setActiveStep] = useState(0);
 
+  const [services, setServices] = useState<StudioService[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedService, setSelectedService] = useState<string>(
-    initialServiceId || STUDIO_SERVICES[0].id
+    initialServiceId || "",
   );
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   );
-  const [selectedTime, setSelectedTime] = useState<string>(TIME_SLOTS[0]);
-  const [clientName, setClientName] = useState<string>('');
-  const [clientEmail, setClientEmail] = useState<string>('');
-  const [clientPhone, setClientPhone] = useState<string>('');
-  const [notes, setNotes] = useState<string>('');
-  
+  const [clientName, setClientName] = useState<string>("");
+  const [clientEmail, setClientEmail] = useState<string>("");
+  const [clientPhone, setClientPhone] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
+
   // Wedding Specific Configurations
-  const [weddingTier, setWeddingTier] = useState<'silver' | 'golden' | 'diamond'>('golden');
-  const [weddingVenue, setWeddingVenue] = useState<string>('');
+  const [weddingTier, setWeddingTier] = useState<
+    "silver" | "golden" | "diamond"
+  >("golden");
+  const [weddingVenue, setWeddingVenue] = useState<string>("");
 
-  const [studioAddons, setStudioAddons] = useState<{ id: string; label: string; price: number; checked: boolean }[]>([
-    { id: 'add-makeup', label: 'On-studio professional hair & makeup prep', price: 1500, checked: false },
-    { id: 'add-expedited', label: 'Priority expedited edit (Delivered within 3 hours)', price: 1000, checked: false },
-    { id: 'add-prints', label: 'Extra biometric physical prints block (12 photos)', price: 400, checked: false },
+  const [studioAddons, setStudioAddons] = useState<
+    { id: string; label: string; price: number; checked: boolean }[]
+  >([
+    {
+      id: "add-makeup",
+      label: "On-studio professional hair & makeup prep",
+      price: 1500,
+      checked: false,
+    },
+    {
+      id: "add-expedited",
+      label: "Priority expedited edit (Delivered within 3 hours)",
+      price: 1000,
+      checked: false,
+    },
+    {
+      id: "add-prints",
+      label: "Extra biometric physical prints block (12 photos)",
+      price: 400,
+      checked: false,
+    },
   ]);
 
-  const [weddingAddons, setWeddingAddons] = useState<{ id: string; label: string; price: number; checked: boolean }[]>([
-    { id: 'add-wedding-drone', label: 'Ultra 4K Aerial Drone Cinematic Coverage', price: 10000, checked: false },
-    { id: 'add-wedding-album', label: 'Luxury Handcrafted Teak Wood Physical Album', price: 6000, checked: false },
-    { id: 'add-wedding-pre', label: 'Pre-wedding Outdoor Couple Highlights Shoot', price: 15000, checked: false },
-    { id: 'add-wedding-delivery', label: 'Teaser Reel express editing within 48 Hours', price: 5000, checked: false },
+  const [weddingAddons, setWeddingAddons] = useState<
+    { id: string; label: string; price: number; checked: boolean }[]
+  >([
+    {
+      id: "add-wedding-drone",
+      label: "Ultra 4K Aerial Drone Cinematic Coverage",
+      price: 10000,
+      checked: false,
+    },
+    {
+      id: "add-wedding-album",
+      label: "Luxury Handcrafted Teak Wood Physical Album",
+      price: 6000,
+      checked: false,
+    },
+    {
+      id: "add-wedding-pre",
+      label: "Pre-wedding Outdoor Couple Highlights Shoot",
+      price: 15000,
+      checked: false,
+    },
+    {
+      id: "add-wedding-delivery",
+      label: "Teaser Reel express editing within 48 Hours",
+      price: 5000,
+      checked: false,
+    },
   ]);
 
-  const steps = ['Select Service', 'Pick Schedule', 'Your Details', 'Complete Appointment'];
+  const steps = [
+    "Select Service",
+    "Pick Schedule",
+    "Your Details",
+    "Complete Appointment",
+  ];
 
-  const activeServiceObj = STUDIO_SERVICES.find(s => s.id === selectedService) || STUDIO_SERVICES[0];
-  const activeAddons = selectedService === 'service-wedding-shoot' ? weddingAddons : studioAddons;
+  const activeServiceObj = services.find((s) => s.id === selectedService) || services[0];
+  const activeAddons =
+    selectedService === "service-wedding-shoot" ? weddingAddons : studioAddons;
 
   // Real-time calculated base price matching tier and category
-  let basePriceNum = parseInt(activeServiceObj.basePrice.replace(/[^0-9]/g, ''), 10);
-  let resolvedBasePriceLabel = activeServiceObj.basePrice;
+  let basePriceNum = 0;
+  let resolvedBasePriceLabel = "";
 
-  if (selectedService === 'service-wedding-shoot') {
-    if (weddingTier === 'silver') {
+  if (activeServiceObj) {
+    basePriceNum = parseInt(
+      activeServiceObj.basePrice.replace(/[^0-9]/g, ""),
+      10,
+    );
+    resolvedBasePriceLabel = activeServiceObj.basePrice;
+  }
+
+  React.useEffect(() => {
+    let active = true;
+    apiService.getServices().then((data) => {
+      if (active) {
+        setServices(data);
+        setLoading(false);
+        if (data.length > 0) {
+          if (!initialServiceId || !data.find((s) => s.id === initialServiceId)) {
+            setSelectedService(data[0].id);
+          } else {
+            setSelectedService(initialServiceId);
+          }
+        }
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [initialServiceId]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', backgroundColor: "background.default" }}>
+        <CircularProgress sx={{ color: '#E50914' }} />
+      </Box>
+    );
+  }
+
+  if (services.length === 0) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', backgroundColor: "background.default" }}>
+        <Typography sx={{ color: 'text.secondary', fontFamily: '"Space Grotesk", sans-serif' }}>
+          No services available at the moment.
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (selectedService === "service-wedding-shoot") {
+    if (weddingTier === "silver") {
       basePriceNum = 25000;
-      resolvedBasePriceLabel = 'Rs. 25,000 (Silver Portrait Package)';
-    } else if (weddingTier === 'golden') {
+      resolvedBasePriceLabel = "Rs. 25,000 (Silver Portrait Package)";
+    } else if (weddingTier === "golden") {
       basePriceNum = 45000;
-      resolvedBasePriceLabel = 'Rs. 45,000 (Golden Royal Package)';
-    } else if (weddingTier === 'diamond') {
+      resolvedBasePriceLabel = "Rs. 45,000 (Golden Royal Package)";
+    } else if (weddingTier === "diamond") {
       basePriceNum = 85000;
-      resolvedBasePriceLabel = 'Rs. 85,000 (Diamond Majestic Cinematic)';
+      resolvedBasePriceLabel = "Rs. 85,000 (Diamond Majestic Cinematic)";
     }
   }
 
   const addonsPriceSum = activeAddons
-    .filter(a => a.checked)
+    .filter((a) => a.checked)
     .reduce((sum, current) => sum + current.price, 0);
   const totalPrice = basePriceNum + addonsPriceSum;
 
@@ -115,7 +205,7 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
   };
 
   const toggleAddon = (index: number) => {
-    if (selectedService === 'service-wedding-shoot') {
+    if (selectedService === "service-wedding-shoot") {
       const updated = [...weddingAddons];
       updated[index].checked = !updated[index].checked;
       setWeddingAddons(updated);
@@ -129,18 +219,19 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
   const handleBookingSubmit = () => {
     const finalDetails: BookingDetails = {
       serviceId: selectedService,
-      packageName: selectedService === 'service-wedding-shoot' 
-        ? `Wedding Photoshoot (${weddingTier.toUpperCase()} Package)` 
-        : activeServiceObj.title,
+      packageName:
+        selectedService === "service-wedding-shoot"
+          ? `Wedding Photoshoot (${weddingTier.toUpperCase()} Package)`
+          : activeServiceObj.title,
       date: selectedDate,
-      timeSlot: selectedService === 'service-wedding-shoot' ? 'Full-Day Coverage' : selectedTime,
       clientName,
       clientEmail,
       clientPhone,
-      notes: selectedService === 'service-wedding-shoot' 
-        ? `[Venue: ${weddingVenue || "To be decided"}] ${notes}` 
-        : notes,
-      addons: activeAddons.filter(a => a.checked).map(a => a.label),
+      notes:
+        selectedService === "service-wedding-shoot"
+          ? `[Venue: ${weddingVenue || "To be decided"}] ${notes}`
+          : notes,
+      addons: activeAddons.filter((a) => a.checked).map((a) => a.label),
       totalPrice,
     };
     if (onBookingComplete) {
@@ -153,25 +244,25 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
     <Box
       sx={{
         py: { xs: 8, md: 12 },
-        backgroundColor: 'background.default',
-        color: 'text.primary',
-        transition: 'background-color 0.3s, color 0.3s',
+        backgroundColor: "background.default",
+        color: "text.primary",
+        transition: "background-color 0.3s, color 0.3s",
       }}
       id="booking-portal-root"
     >
       <Container maxWidth="md" id="booking-container">
         {/* Header Title */}
-        <Box sx={{ mb: 6, textAlign: 'center' }}>
+        <Box sx={{ mb: 6, textAlign: "center" }}>
           <Box
             sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
+              display: "inline-flex",
+              alignItems: "center",
               gap: 1,
               px: 2,
               py: 0.5,
-              borderRadius: '100px',
-              backgroundColor: 'rgba(229, 9, 20, 0.08)',
-              border: '1px solid rgba(229, 9, 20, 0.25)',
+              borderRadius: "100px",
+              backgroundColor: "rgba(229, 9, 20, 0.08)",
+              border: "1px solid rgba(229, 9, 20, 0.25)",
               mb: 2,
             }}
           >
@@ -180,20 +271,37 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
               variant="caption"
               sx={{
                 fontFamily: '"Space Grotesk", sans-serif',
-                color: '#ff4d4d',
+                color: "#ff4d4d",
                 fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
               }}
             >
               Real-time Reservation
             </Typography>
           </Box>
-          <Typography variant="h3" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700, mb: 1, color: 'text.primary' }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontWeight: 700,
+              mb: 1,
+              color: "text.primary",
+            }}
+          >
             Book Your Studio Session
           </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: '520px', mx: 'auto', fontWeight: 300 }}>
-            Reserve your photography slot instantly. Walk out with gorgeous, professional digital exports and high-quality printed layouts.
+          <Typography
+            variant="body2"
+            sx={{
+              color: "text.secondary",
+              maxWidth: "520px",
+              mx: "auto",
+              fontWeight: 300,
+            }}
+          >
+            Reserve your photography slot instantly. Walk out with gorgeous,
+            professional digital exports and high-quality printed layouts.
           </Typography>
         </Box>
 
@@ -202,34 +310,43 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
           elevation={0}
           sx={{
             p: { xs: 3, md: 5 },
-            border: '1px solid',
-            borderColor: isDark ? 'rgba(229, 9, 20, 0.15)' : 'rgba(229, 9, 20, 0.08)',
-            backgroundColor: 'background.paper',
-            color: 'text.primary',
-            borderRadius: '8px',
-            transition: 'background-color 0.3s, border-color 0.3s',
+            border: "1px solid",
+            borderColor: isDark
+              ? "rgba(229, 9, 20, 0.15)"
+              : "rgba(229, 9, 20, 0.08)",
+            backgroundColor: "background.paper",
+            color: "text.primary",
+            borderRadius: "8px",
+            transition: "background-color 0.3s, border-color 0.3s",
           }}
           id="booking-panel"
         >
           {/* Progress Stepper */}
-          <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 5 }} id="booking-stepper">
+          <Stepper
+            activeStep={activeStep}
+            alternativeLabel
+            sx={{ mb: 5 }}
+            id="booking-stepper"
+          >
             {steps.map((label) => (
               <Step
                 key={label}
                 sx={{
-                  '& .MuiStepIcon-root': { color: isDark ? '#222222' : '#e2e8f0' },
-                  '& .MuiStepIcon-root.Mui-active': { color: '#E50914' },
-                  '& .MuiStepIcon-root.Mui-completed': { color: '#22c55e' },
+                  "& .MuiStepIcon-root": {
+                    color: isDark ? "#222222" : "#e2e8f0",
+                  },
+                  "& .MuiStepIcon-root.Mui-active": { color: "#E50914" },
+                  "& .MuiStepIcon-root.Mui-completed": { color: "#22c55e" },
                 }}
               >
                 <StepLabel
                   sx={{
-                    '& .MuiStepLabel-label': {
+                    "& .MuiStepLabel-label": {
                       fontFamily: '"Space Grotesk", sans-serif',
-                      fontSize: '0.75rem',
-                      color: 'text.secondary',
-                      '&.Mui-active': { color: 'text.primary' },
-                      '&.Mui-completed': { color: '#22c55e' },
+                      fontSize: "0.75rem",
+                      color: "text.secondary",
+                      "&.Mui-active": { color: "text.primary" },
+                      "&.Mui-completed": { color: "#22c55e" },
                     },
                   }}
                 >
@@ -242,46 +359,89 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
           {/* Stepper Case Screens */}
           {activeStep === 0 && (
             <Box id="booking-step-service">
-              <Typography variant="h6" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, mb: 3, color: '#ffffff' }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 600,
+                  mb: 3,
+                  color: "#ffffff",
+                }}
+              >
                 1. Select Desired Service Category
               </Typography>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                {STUDIO_SERVICES.map((serv) => {
+                {services.map((serv) => {
                   const isChosen = selectedService === serv.id;
                   return (
                     <Card
                       key={serv.id}
                       onClick={() => setSelectedService(serv.id)}
                       sx={{
-                        cursor: 'pointer',
-                        backgroundColor: isChosen ? 'rgba(229, 9, 20, 0.03)' : '#111111',
-                        border: isChosen ? '2px solid #E50914' : '1px solid rgba(255, 255, 255, 0.05)',
-                        borderRadius: '6px',
-                        display: 'flex',
-                        alignItems: 'center',
+                        cursor: "pointer",
+                        backgroundColor: isChosen
+                          ? "rgba(229, 9, 20, 0.03)"
+                          : "#111111",
+                        border: isChosen
+                          ? "2px solid #E50914"
+                          : "1px solid rgba(255, 255, 255, 0.05)",
+                        borderRadius: "6px",
+                        display: "flex",
+                        alignItems: "center",
                         p: 1.5,
-                        transition: 'all 0.2s',
-                        boxShadow: 'none',
-                        '&:hover': {
-                          backgroundColor: isChosen ? 'rgba(229, 9, 20, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-                          transform: 'translateY(-2px)',
+                        transition: "all 0.2s",
+                        boxShadow: "none",
+                        "&:hover": {
+                          backgroundColor: isChosen
+                            ? "rgba(229, 9, 20, 0.05)"
+                            : "rgba(255, 255, 255, 0.02)",
+                          transform: "translateY(-2px)",
                         },
                       }}
                     >
-                      <Box sx={{ width: 64, height: 64, borderRadius: '4px', overflow: 'hidden', mr: 2, flexShrink: 0 }}>
+                      <Box
+                        sx={{
+                          width: 64,
+                          height: 64,
+                          borderRadius: "4px",
+                          overflow: "hidden",
+                          mr: 2,
+                          flexShrink: 0,
+                        }}
+                      >
                         <img
                           src={serv.imageUrl}
                           alt=""
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
                           referrerPolicy="no-referrer"
                         />
                       </Box>
                       <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.875rem', lineHeight: 1.25, mb: 0.5, color: '#ffffff' }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "0.875rem",
+                            lineHeight: 1.25,
+                            mb: 0.5,
+                            color: "#ffffff",
+                          }}
+                        >
                           {serv.title}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#ff4d4d', fontWeight: 700, display: 'block' }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "#ff4d4d",
+                            fontWeight: 700,
+                            display: "block",
+                          }}
+                        >
                           {serv.basePrice}
                         </Typography>
                       </Box>
@@ -289,7 +449,10 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                         checked={isChosen}
                         value={serv.id}
                         name="service-radio"
-                        sx={{ color: 'rgba(255,255,255,0.2)', '&.Mui-checked': { color: '#E50914' } }}
+                        sx={{
+                          color: "rgba(255,255,255,0.2)",
+                          "&.Mui-checked": { color: "#E50914" },
+                        }}
                       />
                     </Card>
                   );
@@ -297,76 +460,187 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
               </div>
 
               {/* Wedding Photoshoot Specific Custom Selection (Package Tier and Venue Location Input) */}
-              {selectedService === 'service-wedding-shoot' && (
-                <Box sx={{ mt: 4, mb: 4, p: 3, backgroundColor: 'rgba(229, 9, 20, 0.02)', border: '1px solid rgba(229, 9, 20, 0.12)', borderRadius: '6px' }}>
-                  <Typography variant="subtitle1" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, color: '#ffffff', mb: 2 }}>
+              {selectedService === "service-wedding-shoot" && (
+                <Box
+                  sx={{
+                    mt: 4,
+                    mb: 4,
+                    p: 3,
+                    backgroundColor: "rgba(229, 9, 20, 0.02)",
+                    border: "1px solid rgba(229, 9, 20, 0.12)",
+                    borderRadius: "6px",
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontFamily: '"Space Grotesk", sans-serif',
+                      fontWeight: 600,
+                      color: "#ffffff",
+                      mb: 2,
+                    }}
+                  >
                     💎 Custom Wedding Photoshoot Package Configuration
                   </Typography>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     {/* Silver Package selector */}
-                    <Paper 
-                      onClick={() => setWeddingTier('silver')}
+                    <Paper
+                      onClick={() => setWeddingTier("silver")}
                       sx={{
                         p: 2,
-                        cursor: 'pointer',
-                        backgroundColor: weddingTier === 'silver' ? 'rgba(229,9,20,0.06)' : '#111111',
-                        border: weddingTier === 'silver' ? '2px solid #E50914' : '1px solid rgba(255,255,255,0.05)',
-                        borderRadius: '6px',
-                        textAlign: 'center',
-                        transition: 'all 0.2s'
+                        cursor: "pointer",
+                        backgroundColor:
+                          weddingTier === "silver"
+                            ? "rgba(229,9,20,0.06)"
+                            : "#111111",
+                        border:
+                          weddingTier === "silver"
+                            ? "2px solid #E50914"
+                            : "1px solid rgba(255,255,255,0.05)",
+                        borderRadius: "6px",
+                        textAlign: "center",
+                        transition: "all 0.2s",
                       }}
                     >
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, color: '#ffffff' }}>Silver Portrait</Typography>
-                      <Typography variant="h6" sx={{ color: '#E50914', fontSize: '1rem', fontWeight: 700, mb: 1 }}>Rs. 25,000</Typography>
-                      <Typography variant="caption" sx={{ color: '#cbd5e1', display: 'block', lineHeight: 1.3 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 700, mb: 0.5, color: "#ffffff" }}
+                      >
+                        Silver Portrait
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: "#E50914",
+                          fontSize: "1rem",
+                          fontWeight: 700,
+                          mb: 1,
+                        }}
+                      >
+                        Rs. 25,000
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#cbd5e1",
+                          display: "block",
+                          lineHeight: 1.3,
+                        }}
+                      >
                         4 Hours | 1 Lead Photographer | 50 Retouched Photos
                       </Typography>
                     </Paper>
 
                     {/* Golden Package selector (Standard) */}
-                    <Paper 
-                      onClick={() => setWeddingTier('golden')}
+                    <Paper
+                      onClick={() => setWeddingTier("golden")}
                       sx={{
                         p: 2,
-                        cursor: 'pointer',
-                        backgroundColor: weddingTier === 'golden' ? 'rgba(229,9,20,0.06)' : '#111111',
-                        border: weddingTier === 'golden' ? '2px solid #E50914' : '1px solid rgba(255,255,255,0.05)',
-                        borderRadius: '6px',
-                        textAlign: 'center',
-                        transition: 'all 0.2s'
+                        cursor: "pointer",
+                        backgroundColor:
+                          weddingTier === "golden"
+                            ? "rgba(229,9,20,0.06)"
+                            : "#111111",
+                        border:
+                          weddingTier === "golden"
+                            ? "2px solid #E50914"
+                            : "1px solid rgba(255,255,255,0.05)",
+                        borderRadius: "6px",
+                        textAlign: "center",
+                        transition: "all 0.2s",
                       }}
                     >
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, color: '#ffffff' }}>Golden Royal</Typography>
-                      <Typography variant="h6" sx={{ color: '#E50914', fontSize: '1rem', fontWeight: 700, mb: 1 }}>Rs. 45,000</Typography>
-                      <Typography variant="caption" sx={{ color: '#cbd5e1', display: 'block', lineHeight: 1.3 }}>
-                        Full Day | 2 Crew Members | Drone Coverage | Cinematic Film
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 700, mb: 0.5, color: "#ffffff" }}
+                      >
+                        Golden Royal
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: "#E50914",
+                          fontSize: "1rem",
+                          fontWeight: 700,
+                          mb: 1,
+                        }}
+                      >
+                        Rs. 45,000
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#cbd5e1",
+                          display: "block",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        Full Day | 2 Crew Members | Drone Coverage | Cinematic
+                        Film
                       </Typography>
                     </Paper>
 
                     {/* Diamond Package selector */}
-                    <Paper 
-                      onClick={() => setWeddingTier('diamond')}
+                    <Paper
+                      onClick={() => setWeddingTier("diamond")}
                       sx={{
                         p: 2,
-                        cursor: 'pointer',
-                        backgroundColor: weddingTier === 'diamond' ? 'rgba(229,9,20,0.06)' : '#111111',
-                        border: weddingTier === 'diamond' ? '2px solid #E50914' : '1px solid rgba(255,255,255,0.05)',
-                        borderRadius: '6px',
-                        textAlign: 'center',
-                        transition: 'all 0.2s'
+                        cursor: "pointer",
+                        backgroundColor:
+                          weddingTier === "diamond"
+                            ? "rgba(229,9,20,0.06)"
+                            : "#111111",
+                        border:
+                          weddingTier === "diamond"
+                            ? "2px solid #E50914"
+                            : "1px solid rgba(255,255,255,0.05)",
+                        borderRadius: "6px",
+                        textAlign: "center",
+                        transition: "all 0.2s",
                       }}
                     >
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, color: '#ffffff' }}>Diamond Majestic</Typography>
-                      <Typography variant="h6" sx={{ color: '#E50914', fontSize: '1rem', fontWeight: 700, mb: 1 }}>Rs. 85,000</Typography>
-                      <Typography variant="caption" sx={{ color: '#cbd5e1', display: 'block', lineHeight: 1.3 }}>
-                        Full Day + Pre-Shoot | 3 Crew | Gold-Trim Teak Album | 4K Cinema Movie
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 700, mb: 0.5, color: "#ffffff" }}
+                      >
+                        Diamond Majestic
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: "#E50914",
+                          fontSize: "1rem",
+                          fontWeight: 700,
+                          mb: 1,
+                        }}
+                      >
+                        Rs. 85,000
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#cbd5e1",
+                          display: "block",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        Full Day + Pre-Shoot | 3 Crew | Gold-Trim Teak Album |
+                        4K Cinema Movie
                       </Typography>
                     </Paper>
                   </div>
 
                   {/* Auspicious Venue location field */}
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#ffffff', display: 'block' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 1,
+                      color: "#ffffff",
+                      display: "block",
+                    }}
+                  >
                     Auspicious Wedding Venue / Location Details:
                   </Typography>
                   <TextField
@@ -376,12 +650,12 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                     onChange={(e) => setWeddingVenue(e.target.value)}
                     placeholder="E.g. Amrapali Banquet, Lalitpur or specific address in Kathmandu"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#ffffff',
-                        backgroundColor: '#111111',
-                        '& fieldset': { borderColor: 'rgba(255,255,255,0.08)' },
-                        '&:hover fieldset': { borderColor: '#E50914' },
-                        '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                      "& .MuiOutlinedInput-root": {
+                        color: "#ffffff",
+                        backgroundColor: "#111111",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.08)" },
+                        "&:hover fieldset": { borderColor: "#E50914" },
+                        "&.Mui-focused fieldset": { borderColor: "#E50914" },
                       },
                     }}
                   />
@@ -390,8 +664,20 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
 
               {/* Addons Selection Block */}
               <Box sx={{ mt: 4 }}>
-                <Typography variant="subtitle2" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, mb: 2, color: '#ffffff' }}>
-                  Optional {selectedService === 'service-wedding-shoot' ? 'Wedding' : 'Studio'} Add-ons (Select if desired):
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    fontWeight: 600,
+                    mb: 2,
+                    color: "#ffffff",
+                  }}
+                >
+                  Optional{" "}
+                  {selectedService === "service-wedding-shoot"
+                    ? "Wedding"
+                    : "Studio"}{" "}
+                  Add-ons (Select if desired):
                 </Typography>
                 <div className="grid grid-cols-1 gap-3">
                   {activeAddons.map((option, idx) => (
@@ -401,32 +687,53 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                       onClick={() => toggleAddon(idx)}
                       sx={{
                         p: 1.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        cursor: 'pointer',
-                        borderColor: option.checked ? '#E50914' : 'rgba(255,255,255,0.05)',
-                        backgroundColor: option.checked ? 'rgba(229, 9, 20, 0.04)' : '#111111',
-                        borderRadius: '4px',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        cursor: "pointer",
+                        borderColor: option.checked
+                          ? "#E50914"
+                          : "rgba(255,255,255,0.05)",
+                        backgroundColor: option.checked
+                          ? "rgba(229, 9, 20, 0.04)"
+                          : "#111111",
+                        borderRadius: "4px",
                       }}
                     >
                       <FormControlLabel
                         control={
                           <Checkbox
                             checked={option.checked}
-                            sx={{ color: 'rgba(255,255,255,0.2)', '&.Mui-checked': { color: '#E50914' } }}
+                            sx={{
+                              color: "rgba(255,255,255,0.2)",
+                              "&.Mui-checked": { color: "#E50914" },
+                            }}
                           />
                         }
                         label={
                           <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem', color: '#e5e7eb' }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontWeight: 500,
+                                fontSize: "0.85rem",
+                                color: "#e5e7eb",
+                              }}
+                            >
                               {option.label}
                             </Typography>
                           </Box>
                         }
-                        sx={{ pointerEvents: 'none', margin: 0 }}
+                        sx={{ pointerEvents: "none", margin: 0 }}
                       />
-                      <Typography variant="subtitle2" sx={{ color: option.checked ? '#ff4d4d' : '#9ca3af', fontSize: '0.85rem', fontWeight: 600 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          color: option.checked ? "#ff4d4d" : "#9ca3af",
+                          fontSize: "0.85rem",
+                          fontWeight: 600,
+                        }}
+                      >
                         + Rs. {option.price.toLocaleString()}
                       </Typography>
                     </Paper>
@@ -434,17 +741,17 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                 </div>
               </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 5 }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 5 }}>
                 <Button
                   variant="contained"
                   onClick={handleNext}
                   sx={{
                     fontFamily: '"Space Grotesk", sans-serif',
-                    textTransform: 'none',
-                    backgroundColor: '#ffffff',
-                    color: '#000000',
+                    textTransform: "none",
+                    backgroundColor: "#ffffff",
+                    color: "#000000",
                     fontWeight: 600,
-                    '&:hover': { backgroundColor: '#E50914', color: '#ffffff' },
+                    "&:hover": { backgroundColor: "#E50914", color: "#ffffff" },
                     px: 4,
                     py: 1,
                   }}
@@ -457,80 +764,89 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
 
           {activeStep === 1 && (
             <Box id="booking-step-schedule">
-              <Typography variant="h6" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, mb: 3, color: '#ffffff' }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 600,
+                  mb: 3,
+                  color: "#ffffff",
+                }}
+              >
                 2. Select Date & Time Slot
               </Typography>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Calendar Input picker */}
                 <div>
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#ffffff' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, mb: 1, color: "#ffffff" }}
+                  >
                     Select Date:
                   </Typography>
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                    min={
+                      new Date(Date.now() + 24 * 60 * 60 * 1000)
+                        .toISOString()
+                        .split("T")[0]
+                    }
                     className="w-full px-3 py-2.5 bg-[#111111] border border-zinc-800 rounded focus:outline-none focus:border-[#E50914] text-sm text-white"
                   />
-                  <Box sx={{ mt: 3, p: 2, backgroundColor: '#111111', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <Typography variant="caption" sx={{ color: '#E50914', fontWeight: 600, display: 'flex', gap: 0.5, alignItems: 'center', mb: 1 }}>
+                  <Box
+                    sx={{
+                      mt: 3,
+                      p: 2,
+                      backgroundColor: "#111111",
+                      borderRadius: "4px",
+                      border: "1px solid rgba(255, 255, 255, 0.05)",
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#E50914",
+                        fontWeight: 600,
+                        display: "flex",
+                        gap: 0.5,
+                        alignItems: "center",
+                        mb: 1,
+                      }}
+                    >
                       <MapPin size={12} /> Kathmandu Main Branch
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#a3a3a3', display: 'block', lineHeight: 1.4 }}>
-                      Appointments booked online are automatically verified. Please arrive 10 minutes before your scheduled slot.
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#a3a3a3",
+                        display: "block",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      Appointments booked online are automatically verified.
+                      Please arrive 10 minutes before your scheduled slot.
                     </Typography>
                   </Box>
                 </div>
 
-                {/* Time Slots selector */}
-                <div>
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#ffffff' }}>
-                    Available Slots for {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}:
-                  </Typography>
-                  
-                  <div className="grid grid-cols-1 gap-2">
-                    {TIME_SLOTS.map((slot) => {
-                      const isTimeChosen = selectedTime === slot;
-                      return (
-                        <Button
-                          key={slot}
-                          fullWidth
-                          variant={isTimeChosen ? 'contained' : 'outlined'}
-                          onClick={() => setSelectedTime(slot)}
-                          id={`timeslot-btn-${slot.replace(/\s+/g, '')}`}
-                          sx={{
-                            justifyContent: 'flex-start',
-                            fontFamily: '"Space Grotesk", sans-serif',
-                            textTransform: 'none',
-                            fontSize: '0.85rem',
-                            py: 1,
-                            px: 2,
-                            borderColor: isTimeChosen ? 'transparent' : 'rgba(255,255,255,0.08)',
-                            backgroundColor: isTimeChosen ? '#E50914' : 'transparent',
-                            color: isTimeChosen ? '#ffffff' : '#ffffff',
-                            '&:hover': {
-                              backgroundColor: isTimeChosen ? '#E50914' : 'rgba(255,255,255,0.03)',
-                              borderColor: isTimeChosen ? 'transparent' : '#E50914',
-                              color: '#ffffff',
-                            },
-                          }}
-                          startIcon={<Clock size={14} />}
-                        >
-                          {slot}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
+                
               </div>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 5 }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mt: 5 }}
+              >
                 <Button
                   variant="text"
                   onClick={handleBack}
-                  sx={{ color: '#9ca3af', fontFamily: '"Space Grotesk", sans-serif', textTransform: 'none', '&:hover': { color: '#ffffff' } }}
+                  sx={{
+                    color: "#9ca3af",
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    textTransform: "none",
+                    "&:hover": { color: "#ffffff" },
+                  }}
                 >
                   Back
                 </Button>
@@ -539,11 +855,11 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                   onClick={handleNext}
                   sx={{
                     fontFamily: '"Space Grotesk", sans-serif',
-                    textTransform: 'none',
-                    backgroundColor: '#ffffff',
-                    color: '#000000',
+                    textTransform: "none",
+                    backgroundColor: "#ffffff",
+                    color: "#000000",
                     fontWeight: 600,
-                    '&:hover': { backgroundColor: '#E50914', color: '#ffffff' },
+                    "&:hover": { backgroundColor: "#E50914", color: "#ffffff" },
                     px: 4,
                   }}
                 >
@@ -555,10 +871,18 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
 
           {activeStep === 2 && (
             <Box id="booking-step-details">
-              <Typography variant="h6" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, mb: 3, color: '#ffffff' }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 600,
+                  mb: 3,
+                  color: "#ffffff",
+                }}
+              >
                 3. Your Registration Information
               </Typography>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <TextField
@@ -570,14 +894,14 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                     placeholder="Enter your first and last name"
                     id="booking-form-name"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#ffffff',
-                        '& fieldset': { borderColor: 'rgba(255,255,255,0.08)' },
-                        '&:hover fieldset': { borderColor: '#E50914' },
-                        '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                      "& .MuiOutlinedInput-root": {
+                        color: "#ffffff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.08)" },
+                        "&:hover fieldset": { borderColor: "#E50914" },
+                        "&.Mui-focused fieldset": { borderColor: "#E50914" },
                       },
-                      '& .MuiInputLabel-root': { color: '#8a8a8f' },
-                      '& .MuiInputLabel-root.Mui-focused': { color: '#E50914' },
+                      "& .MuiInputLabel-root": { color: "#8a8a8f" },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#E50914" },
                     }}
                   />
                 </div>
@@ -592,14 +916,14 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                     placeholder="e.g. name@domain.com"
                     id="booking-form-email"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#ffffff',
-                        '& fieldset': { borderColor: 'rgba(255,255,255,0.08)' },
-                        '&:hover fieldset': { borderColor: '#E50914' },
-                        '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                      "& .MuiOutlinedInput-root": {
+                        color: "#ffffff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.08)" },
+                        "&:hover fieldset": { borderColor: "#E50914" },
+                        "&.Mui-focused fieldset": { borderColor: "#E50914" },
                       },
-                      '& .MuiInputLabel-root': { color: '#8a8a8f' },
-                      '& .MuiInputLabel-root.Mui-focused': { color: '#E50914' },
+                      "& .MuiInputLabel-root": { color: "#8a8a8f" },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#E50914" },
                     }}
                   />
                 </div>
@@ -614,14 +938,14 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                     placeholder="e.g. 98XXXXXXXX (Nepal Mobile)"
                     id="booking-form-phone"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#ffffff',
-                        '& fieldset': { borderColor: 'rgba(255,255,255,0.08)' },
-                        '&:hover fieldset': { borderColor: '#E50914' },
-                        '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                      "& .MuiOutlinedInput-root": {
+                        color: "#ffffff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.08)" },
+                        "&:hover fieldset": { borderColor: "#E50914" },
+                        "&.Mui-focused fieldset": { borderColor: "#E50914" },
                       },
-                      '& .MuiInputLabel-root': { color: '#8a8a8f' },
-                      '& .MuiInputLabel-root.Mui-focused': { color: '#E50914' },
+                      "& .MuiInputLabel-root": { color: "#8a8a8f" },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#E50914" },
                     }}
                   />
                 </div>
@@ -636,14 +960,14 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                     placeholder="E.g. I need soft background matching ERAS standards, we are bringing white coats, or I have a strict visa specification deadline."
                     id="booking-form-notes"
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#ffffff',
-                        '& fieldset': { borderColor: 'rgba(255,255,255,0.08)' },
-                        '&:hover fieldset': { borderColor: '#E50914' },
-                        '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                      "& .MuiOutlinedInput-root": {
+                        color: "#ffffff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.08)" },
+                        "&:hover fieldset": { borderColor: "#E50914" },
+                        "&.Mui-focused fieldset": { borderColor: "#E50914" },
                       },
-                      '& .MuiInputLabel-root': { color: '#8a8a8f' },
-                      '& .MuiInputLabel-root.Mui-focused': { color: '#E50914' },
+                      "& .MuiInputLabel-root": { color: "#8a8a8f" },
+                      "& .MuiInputLabel-root.Mui-focused": { color: "#E50914" },
                     }}
                   />
                 </div>
@@ -654,53 +978,132 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                 sx={{
                   mt: 4,
                   p: 3,
-                  backgroundColor: '#111111',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  borderRadius: '6px',
+                  backgroundColor: "#111111",
+                  border: "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "6px",
                 }}
               >
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#ffffff', mb: 1 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, color: "#ffffff", mb: 1 }}
+                >
                   Booking Summary Preview
                 </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2" sx={{ color: '#a3a3a3' }}>
-                    Service: {selectedService === 'service-wedding-shoot' ? `Wedding Photoshoot (${weddingTier.toUpperCase()})` : activeServiceObj.title}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1,
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "#a3a3a3" }}>
+                    Service:{" "}
+                    {selectedService === "service-wedding-shoot"
+                      ? `Wedding Photoshoot (${weddingTier.toUpperCase()})`
+                      : activeServiceObj.title}
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>
-                    {selectedService === 'service-wedding-shoot' ? resolvedBasePriceLabel.split(' (')[0] : activeServiceObj.basePrice}
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: "#ffffff" }}
+                  >
+                    {selectedService === "service-wedding-shoot"
+                      ? resolvedBasePriceLabel.split(" (")[0]
+                      : activeServiceObj.basePrice}
                   </Typography>
                 </Box>
-                {selectedService === 'service-wedding-shoot' && weddingVenue && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" sx={{ color: '#a3a3a3' }}>Venue Location:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#ff4d4d' }}>{weddingVenue}</Typography>
-                  </Box>
-                )}
-                {activeAddons.filter(a => a.checked).length > 0 && (
+                {selectedService === "service-wedding-shoot" &&
+                  weddingVenue && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ color: "#a3a3a3" }}>
+                        Venue Location:
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 500, color: "#ff4d4d" }}
+                      >
+                        {weddingVenue}
+                      </Typography>
+                    </Box>
+                  )}
+                {activeAddons.filter((a) => a.checked).length > 0 && (
                   <Box sx={{ mb: 1 }}>
-                    <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block' }}>Add-ons:</Typography>
-                    {activeAddons.filter(a => a.checked).map(a => (
-                      <Box key={a.id} sx={{ display: 'flex', justifyContent: 'space-between', pl: 1, mb: 0.5 }}>
-                        <Typography variant="caption" sx={{ color: '#a3a3a3' }}>• {a.label}</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 500, color: '#ffffff' }}>+ Rs. {a.price.toLocaleString()}</Typography>
-                      </Box>
-                    ))}
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#9ca3af", display: "block" }}
+                    >
+                      Add-ons:
+                    </Typography>
+                    {activeAddons
+                      .filter((a) => a.checked)
+                      .map((a) => (
+                        <Box
+                          key={a.id}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            pl: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#a3a3a3" }}
+                          >
+                            • {a.label}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ fontWeight: 500, color: "#ffffff" }}
+                          >
+                            + Rs. {a.price.toLocaleString()}
+                          </Typography>
+                        </Box>
+                      ))}
                   </Box>
                 )}
-                <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.05)' }} />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff' }}>Total Final Price</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#E50914' }}>
+                <Divider
+                  sx={{ my: 1.5, borderColor: "rgba(255,255,255,0.05)" }}
+                />
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 700, color: "#ffffff" }}
+                  >
+                    Total Final Price
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 700, color: "#E50914" }}
+                  >
                     Rs. {totalPrice.toLocaleString()}
                   </Typography>
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 5 }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mt: 5 }}
+              >
                 <Button
                   variant="text"
                   onClick={handleBack}
-                  sx={{ color: '#9ca3af', fontFamily: '"Space Grotesk", sans-serif', textTransform: 'none', '&:hover': { color: '#ffffff' } }}
+                  sx={{
+                    color: "#9ca3af",
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    textTransform: "none",
+                    "&:hover": { color: "#ffffff" },
+                  }}
                 >
                   Back
                 </Button>
@@ -710,11 +1113,11 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
                   id="final-booking-submit-btn"
                   sx={{
                     fontFamily: '"Space Grotesk", sans-serif',
-                    textTransform: 'none',
-                    backgroundColor: '#ffffff',
-                    color: '#000000',
+                    textTransform: "none",
+                    backgroundColor: "#ffffff",
+                    color: "#000000",
                     fontWeight: 600,
-                    '&:hover': { backgroundColor: '#E50914', color: '#ffffff' },
+                    "&:hover": { backgroundColor: "#E50914", color: "#ffffff" },
                     px: 4,
                   }}
                 >
@@ -725,68 +1128,166 @@ export default function BookingPortal({ initialServiceId, onBookingComplete }: B
           )}
 
           {activeStep === 3 && (
-            <Box sx={{ textAlign: 'center', py: 4 }} id="booking-step-success">
-              <Box sx={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: 'rgba(34, 197, 94, 0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+            <Box sx={{ textAlign: "center", py: 4 }} id="booking-step-success">
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(34, 197, 94, 0.1)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mb: 3,
+                }}
+              >
                 <CheckCircle2 size={40} className="text-[#22c55e]" />
               </Box>
-              <Typography variant="h4" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700, mb: 1, color: '#ffffff' }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 700,
+                  mb: 1,
+                  color: "#ffffff",
+                }}
+              >
                 Booking Successfully Made!
               </Typography>
-              <Typography variant="body1" sx={{ color: '#a3a3a3', maxWidth: '440px', mx: 'auto', mb: 4, fontWeight: 300, fontSize: '0.95rem' }}>
-                Thank you, <strong className="font-semibold text-white">{clientName}</strong>. Your photography appointment has been recorded at Kathmandu branch.
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#a3a3a3",
+                  maxWidth: "440px",
+                  mx: "auto",
+                  mb: 4,
+                  fontWeight: 300,
+                  fontSize: "0.95rem",
+                }}
+              >
+                Thank you,{" "}
+                <strong className="font-semibold text-white">
+                  {clientName}
+                </strong>
+                . Your photography appointment has been recorded at Kathmandu
+                branch.
               </Typography>
 
-              <Paper variant="outlined" sx={{ p: 3, maxWidth: '480px', mx: 'auto', textAlign: 'left', mb: 4, backgroundColor: '#111111', border: '1px solid rgba(255, 255, 255, 0.05)', color: '#ffffff' }}>
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 3,
+                  maxWidth: "480px",
+                  mx: "auto",
+                  textAlign: "left",
+                  mb: 4,
+                  backgroundColor: "#111111",
+                  border: "1px solid rgba(255, 255, 255, 0.05)",
+                  color: "#ffffff",
+                }}
+              >
                 <div className="grid grid-cols-12 gap-y-3 gap-x-4">
                   <div className="col-span-5">
-                    <Typography variant="caption" sx={{ color: '#8a8a8f', display: 'block' }}>Reference Code:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#ffffff', fontFamily: '"JetBrains Mono", monospace' }}>
-                      PSS-{(100000 + Math.floor(Math.random() * 900000))}
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#8a8a8f", display: "block" }}
+                    >
+                      Reference Code:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#ffffff",
+                        fontFamily: '"JetBrains Mono", monospace',
+                      }}
+                    >
+                      PSS-{100000 + Math.floor(Math.random() * 900000)}
                     </Typography>
                   </div>
                   <div className="col-span-7">
-                    <Typography variant="caption" sx={{ color: '#8a8a8f', display: 'block' }}>Studio Session:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#ff4d4d' }}>{activeServiceObj.title}</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#8a8a8f", display: "block" }}
+                    >
+                      Studio Session:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#ff4d4d" }}
+                    >
+                      {activeServiceObj.title}
+                    </Typography>
                   </div>
                   <div className="col-span-5">
-                    <Typography variant="caption" sx={{ color: '#8a8a8f', display: 'block' }}>Scheduled Date:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#ffffff' }}>
-                      {new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#8a8a8f", display: "block" }}
+                    >
+                      Scheduled Date:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, color: "#ffffff" }}
+                    >
+                      {new Date(selectedDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </Typography>
                   </div>
-                  <div className="col-span-7">
-                    <Typography variant="caption" sx={{ color: '#8a8a8f', display: 'block' }}>Assigned Slot:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#ffffff' }}>{selectedTime}</Typography>
-                  </div>
                   <div className="col-span-12">
-                    <Typography variant="caption" sx={{ color: '#8a8a8f', display: 'block' }}>Kathmandu Branch Address:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 500, display: 'flex', gap: 0.5, alignItems: 'center', color: '#ffffff' }}>
-                      <MapPin size={14} className="text-[#E50914]" /> New Baneshwor Way, Kathmandu (opposite Eyeplex Mall)
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#8a8a8f", display: "block" }}
+                    >
+                      Kathmandu Address:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 500,
+                        display: "flex",
+                        gap: 0.5,
+                        alignItems: "center",
+                        color: "#ffffff",
+                      }}
+                    >
+                      <MapPin size={14} className="text-[#E50914]" />
+                      Rudramati Pul Anamnagar
                     </Typography>
                   </div>
                 </div>
               </Paper>
 
-              <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 4 }}>
-                We have dispatched a validation voucher and direct markers to {clientEmail}. See you soon!
+              <Typography
+                variant="caption"
+                sx={{ color: "#9ca3af", display: "block", mb: 4 }}
+              >
+                Thank you for reserving your slot. See you soon!
               </Typography>
 
               <Button
                 variant="outlined"
                 onClick={() => {
                   setActiveStep(0);
-                  setClientName('');
-                  setClientEmail('');
-                  setClientPhone('');
-                  setNotes('');
+                  setClientName("");
+                  setClientEmail("");
+                  setClientPhone("");
+                  setNotes("");
                 }}
                 id="reset-booking-portal-btn"
                 sx={{
-                  color: '#ffffff',
-                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                  color: "#ffffff",
+                  borderColor: "rgba(255, 255, 255, 0.15)",
                   fontFamily: '"Space Grotesk", sans-serif',
-                  textTransform: 'none',
-                  '&:hover': { borderColor: '#E50914', backgroundColor: 'rgba(229, 9, 20, 0.05)', color: '#ff4d4d' },
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: "#E50914",
+                    backgroundColor: "rgba(229, 9, 20, 0.05)",
+                    color: "#ff4d4d",
+                  },
                 }}
               >
                 Book Another Appointment
