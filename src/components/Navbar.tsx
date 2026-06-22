@@ -54,6 +54,7 @@ import {
 import { ColorModeContext } from "../App";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/Mero Click.png";
+import BookingPortal from "./BookingPortal";
 
 export interface StudioService {
   id: string;

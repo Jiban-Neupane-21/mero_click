@@ -30,14 +30,13 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
   const categories = React.useMemo(() => {
     const list = [
       { id: "all", label: "All Projects" },
+      { id: "Wedding", label: "Wedding Photography" },
       { id: "Portrait", label: "Executive Portraits" },
-      { id: "Visa", label: "Visa & Biometrics" },
+      { id: "Studio", label: "Studio & Gear" },
       { id: "Product", label: "Product & Catalog" },
       { id: "Event", label: "Celebration Events" },
-      { id: "Studio", label: "Studio & Gear" },
-      { id: "Wedding", label: "Wedding Photography" },
-      { id: "Videography", label: "Videography" },
       { id: "Photo Frame", label: "Photo Frames" },
+      { id: "Visa", label: "Visa & Biometrics" },
     ];
     const existingIds = new Set(list.map((c) => c.id.toLowerCase()));
     items.forEach((item) => {
@@ -53,9 +52,13 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
     setActiveTab(newValue);
   };
 
+  const shuffledItems = React.useMemo(() => {
+    return [...items].sort(() => Math.random() - 0.5);
+  }, [items]);
+
   const filteredItems =
     activeTab === "all"
-      ? items
+      ? shuffledItems
       : items.filter((item) => item.category === activeTab);
 
   return (

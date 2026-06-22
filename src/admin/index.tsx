@@ -54,6 +54,7 @@ export default function AdminPortal({ onDataChange }: AdminPortalProps) {
     }
     localStorage.removeItem('kathmandu_admin_session_user');
     setSessionUser(null);
+    window.location.href = '/';
   };
 
   if (fetchingSession) {

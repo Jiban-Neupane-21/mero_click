@@ -20,9 +20,9 @@ import {
   FormControlLabel,
   Divider,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import { Clock, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
-import { STUDIO_SERVICES } from "../data";
 import { BookingDetails, StudioService } from "../types";
 import { apiService } from "../utils/supabase";
 
@@ -31,15 +31,6 @@ interface BookingPortalProps {
   onBookingComplete?: (details: BookingDetails) => void;
 }
 
-const TIME_SLOTS = [
-  "10:00 AM - 10:45 AM",
-  "11:00 AM - 11:45 AM",
-  "12:00 PM - 12:45 PM",
-  "01:30 PM - 02:15 PM",
-  "02:30 PM - 03:15 PM",
-  "03:30 PM - 04:15 PM",
-  "04:30 PM - 05:15 PM",
-];
 
 export default function BookingPortal({
   initialServiceId,
@@ -53,12 +44,11 @@ export default function BookingPortal({
   const [loading, setLoading] = useState(true);
 
   const [selectedService, setSelectedService] = useState<string>(
-    initialServiceId || (STUDIO_SERVICES[0] ? STUDIO_SERVICES[0].id : ""),
+    initialServiceId || "",
   );
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   );
-  const [selectedTime, setSelectedTime] = useState<string>(TIME_SLOTS[0]);
   const [clientName, setClientName] = useState<string>("");
   const [clientEmail, setClientEmail] = useState<string>("");
   const [clientPhone, setClientPhone] = useState<string>("");
@@ -129,19 +119,21 @@ export default function BookingPortal({
     "Complete Appointment",
   ];
 
-  const activeServiceObj =
-    (services.length > 0 ? services : STUDIO_SERVICES).find(
-      (s) => s.id === selectedService,
-    ) || (services.length > 0 ? services[0] : STUDIO_SERVICES[0]);
+  const activeServiceObj = services.find((s) => s.id === selectedService) || services[0];
   const activeAddons =
     selectedService === "service-wedding-shoot" ? weddingAddons : studioAddons;
 
   // Real-time calculated base price matching tier and category
-  let basePriceNum = parseInt(
-    activeServiceObj.basePrice.replace(/[^0-9]/g, ""),
-    10,
-  );
-  let resolvedBasePriceLabel = activeServiceObj.basePrice;
+  let basePriceNum = 0;
+  let resolvedBasePriceLabel = "";
+
+  if (activeServiceObj) {
+    basePriceNum = parseInt(
+      activeServiceObj.basePrice.replace(/[^0-9]/g, ""),
+      10,
+    );
+    resolvedBasePriceLabel = activeServiceObj.basePrice;
+  }
 
   React.useEffect(() => {
     let active = true;
@@ -149,8 +141,12 @@ export default function BookingPortal({
       if (active) {
         setServices(data);
         setLoading(false);
-        if (data.length > 0 && !initialServiceId) {
-          setSelectedService(data[0].id);
+        if (data.length > 0) {
+          if (!initialServiceId || !data.find((s) => s.id === initialServiceId)) {
+            setSelectedService(data[0].id);
+          } else {
+            setSelectedService(initialServiceId);
+          }
         }
       }
     });
@@ -158,6 +154,24 @@ export default function BookingPortal({
       active = false;
     };
   }, [initialServiceId]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', backgroundColor: "background.default" }}>
+        <CircularProgress sx={{ color: '#E50914' }} />
+      </Box>
+    );
+  }
+
+  if (services.length === 0) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', backgroundColor: "background.default" }}>
+        <Typography sx={{ color: 'text.secondary', fontFamily: '"Space Grotesk", sans-serif' }}>
+          No services available at the moment.
+        </Typography>
+      </Box>
+    );
+  }
 
   if (selectedService === "service-wedding-shoot") {
     if (weddingTier === "silver") {
@@ -210,10 +224,6 @@ export default function BookingPortal({
           ? `Wedding Photoshoot (${weddingTier.toUpperCase()} Package)`
           : activeServiceObj.title,
       date: selectedDate,
-      timeSlot:
-        selectedService === "service-wedding-shoot"
-          ? "Full-Day Coverage"
-          : selectedTime,
       clientName,
       clientEmail,
       clientPhone,
@@ -362,7 +372,7 @@ export default function BookingPortal({
               </Typography>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                {(services.length > 0 ? services : STUDIO_SERVICES).map((serv) => {
+                {services.map((serv) => {
                   const isChosen = selectedService === serv.id;
                   return (
                     <Card
@@ -822,64 +832,7 @@ export default function BookingPortal({
                   </Box>
                 </div>
 
-                {/* Time Slots selector */}
-                <div>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, mb: 1, color: "#ffffff" }}
-                  >
-                    Available Slots for{" "}
-                    {new Date(selectedDate).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                    :
-                  </Typography>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    {TIME_SLOTS.map((slot) => {
-                      const isTimeChosen = selectedTime === slot;
-                      return (
-                        <Button
-                          key={slot}
-                          fullWidth
-                          variant={isTimeChosen ? "contained" : "outlined"}
-                          onClick={() => setSelectedTime(slot)}
-                          id={`timeslot-btn-${slot.replace(/\s+/g, "")}`}
-                          sx={{
-                            justifyContent: "flex-start",
-                            fontFamily: '"Space Grotesk", sans-serif',
-                            textTransform: "none",
-                            fontSize: "0.85rem",
-                            py: 1,
-                            px: 2,
-                            borderColor: isTimeChosen
-                              ? "transparent"
-                              : "rgba(255,255,255,0.08)",
-                            backgroundColor: isTimeChosen
-                              ? "#E50914"
-                              : "transparent",
-                            color: isTimeChosen ? "#ffffff" : "#ffffff",
-                            "&:hover": {
-                              backgroundColor: isTimeChosen
-                                ? "#E50914"
-                                : "rgba(255,255,255,0.03)",
-                              borderColor: isTimeChosen
-                                ? "transparent"
-                                : "#E50914",
-                              color: "#ffffff",
-                            },
-                          }}
-                          startIcon={<Clock size={14} />}
-                        >
-                          {slot}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
+                
               </div>
 
               <Box
@@ -1284,26 +1237,12 @@ export default function BookingPortal({
                       })}
                     </Typography>
                   </div>
-                  <div className="col-span-7">
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#8a8a8f", display: "block" }}
-                    >
-                      Assigned Slot:
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 500, color: "#ffffff" }}
-                    >
-                      {selectedTime}
-                    </Typography>
-                  </div>
                   <div className="col-span-12">
                     <Typography
                       variant="caption"
                       sx={{ color: "#8a8a8f", display: "block" }}
                     >
-                      Kathmandu Branch Address:
+                      Kathmandu Address:
                     </Typography>
                     <Typography
                       variant="body2"
@@ -1315,8 +1254,8 @@ export default function BookingPortal({
                         color: "#ffffff",
                       }}
                     >
-                      <MapPin size={14} className="text-[#E50914]" /> New
-                      Baneshwor Way, Kathmandu (opposite Eyeplex Mall)
+                      <MapPin size={14} className="text-[#E50914]" />
+                      Rudramati Pul Anamnagar
                     </Typography>
                   </div>
                 </div>
@@ -1326,8 +1265,7 @@ export default function BookingPortal({
                 variant="caption"
                 sx={{ color: "#9ca3af", display: "block", mb: 4 }}
               >
-                We have dispatched a validation voucher and direct markers to{" "}
-                {clientEmail}. See you soon!
+                Thank you for reserving your slot. See you soon!
               </Typography>
 
               <Button

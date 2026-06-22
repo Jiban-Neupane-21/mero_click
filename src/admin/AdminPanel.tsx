@@ -100,6 +100,7 @@ export default function AdminPanel({
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(false);
+  
 
   // Load all items
   const loadDatabaseItems = async () => {
@@ -120,6 +121,15 @@ export default function AdminPanel({
 
   useEffect(() => {
     loadDatabaseItems();
+    if (isSupabaseConfigured) {
+      console.log(
+        "Supabase Instance Connected! Modifications will synchronize directly onto your PostgreSQL tables."
+      );
+    } else {
+      console.warn(
+        "Running in local sandbox mode. Changes will persist directly inside your browser's persistent key-value localStorage. Connect VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY env parameters to sync live!"
+      );
+    }
   }, []);
 
   const triggerAlert = (
@@ -453,7 +463,7 @@ export default function AdminPanel({
                 letterSpacing: "-0.02em",
               }}
             >
-              Kathmandu Studio Workspace
+              Studio Mero Click Platform
             </Typography>
             <Typography variant="body2" sx={{ color: "#a1a1aa" }}>
               Logged in as:{" "}
@@ -478,47 +488,11 @@ export default function AdminPanel({
               },
             }}
           >
-            End Workspace Session
+            Log Out
           </Button>
         </Box>
 
-        {/* Database binding alert warning if keys aren't added, otherwise success chip */}
-        <Box sx={{ mb: 4 }}>
-          {isSupabaseConfigured ? (
-            <Alert
-              severity="success"
-              icon={<CheckCircle size={18} />}
-              sx={{
-                background: "rgba(16, 185, 129, 0.08)",
-                color: "#34d399",
-                border: "1px solid rgba(16, 185, 129, 0.2)",
-                alignItems: "center",
-                "& .MuiAlert-icon": { color: "#10b981" },
-              }}
-            >
-              Supabase Instance Connected! Modifications will synchronize
-              directly onto your PostgreSQL tables.
-            </Alert>
-          ) : (
-            <Alert
-              severity="warning"
-              icon={<AlertCircle size={18} />}
-              sx={{
-                background: "rgba(245, 158, 11, 0.08)",
-                color: "#fbbf24",
-                border: "1px solid rgba(245, 158, 11, 0.2)",
-                alignItems: "center",
-                "& .MuiAlert-icon": { color: "#f59e0b" },
-              }}
-            >
-              Running in local sandbox mode. Changes will persist directly
-              inside your browser's persistent key-value{" "}
-              <strong>localStorage</strong>. Connect{" "}
-              <code>VITE_SUPABASE_URL</code> and{" "}
-              <code>VITE_SUPABASE_ANON_KEY</code> env parameters to sync live!
-            </Alert>
-          )}
-        </Box>
+
 
         {/* Alert updates */}
         {alertInfo && (

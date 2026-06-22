@@ -91,7 +91,7 @@ export interface BookingDetails {
   serviceId: string;
   packageName: string;
   date: string;
-  timeSlot: string;
+  timeSlot?: string;
   clientName: string;
   clientEmail: string;
   clientPhone: string;
