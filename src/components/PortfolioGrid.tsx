@@ -336,7 +336,7 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
       <Dialog
         open={!!selectedItem}
         onClose={() => setSelectedItem(null)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
         sx={{
           "& .MuiPaper-root": {
@@ -448,7 +448,7 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
               <Box
                 sx={{
                   width: "100%",
-                  maxHeight: "70vh",
+                  maxHeight: "90vh",
                   overflow: "auto",
                   display: "flex",
                   justifyContent: zoomScale > 1 ? "flex-start" : "center",
@@ -464,7 +464,7 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
                     width: zoomScale > 1 ? `${100 * zoomScale}%` : "auto",
                     height: zoomScale > 1 ? "auto" : "auto",
                     maxWidth: zoomScale === 1 ? "100%" : "none",
-                    maxHeight: zoomScale === 1 ? "70vh" : "none",
+                    maxHeight: zoomScale === 1 ? "90vh" : "none",
                     objectFit: "contain",
                     transition: "width 0.3s ease, max-width 0.3s ease",
                     cursor: zoomScale > 1 ? "zoom-out" : "zoom-in",
@@ -476,74 +476,6 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
                   }}
                   referrerPolicy="no-referrer"
                 />
-              </Box>
-              <Box sx={{ p: 4 }}>
-                <Box
-                  sx={{ display: "flex", gap: 1, alignItems: "center", mb: 1 }}
-                >
-                  <Award size={16} className="text-[#E50914]" />
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "#ff4d4d",
-                      fontWeight: 600,
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    PSS PORTFOLIO SPECS
-                  </Typography>
-                </Box>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontFamily: '"Space Grotesk", sans-serif',
-                    fontWeight: 700,
-                    mb: 1,
-                    color: "text.primary",
-                  }}
-                >
-                  {selectedItem.title}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: "text.secondary",
-                    fontWeight: 300,
-                    mb: 2,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Successfully verified and approved biometric capture
-                  conforming strictly to the requested{" "}
-                  {selectedItem.specLabel || selectedItem.category} parameters.
-                  Delivered same-day in physical prints + premium high-res email
-                  copies.
-                </Typography>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    px: 2,
-                    py: 0.5,
-                    borderRadius: "4px",
-                    backgroundColor: isDark
-                      ? "rgba(255,255,255,0.05)"
-                      : "rgba(0,0,0,0.05)",
-                    border: "1px solid",
-                    borderColor: isDark
-                      ? "rgba(255,255,255,0.1)"
-                      : "rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontFamily: '"JetBrains Mono", monospace',
-                      color: "text.secondary",
-                    }}
-                  >
-                    Category: {selectedItem.category}
-                  </Typography>
-                </Box>
               </Box>
             </DialogContent>
           </Box>
