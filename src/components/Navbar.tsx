@@ -54,23 +54,22 @@ import {
 import { ColorModeContext } from "../App";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/Mero Click.png";
-import BookingPortal from "./BookingPortal";
 
 export interface StudioService {
   id: string;
   title: string;
   category:
-    | "Portrait"
-    | "Product"
-    | "Event"
-    | "Visa"
-    | "Wedding"
-    | "Videography"
-    | "Photo Frame"
-    | "Photography"
-    | "Customized Gift"
-    | "Photo Enhancement"
-    | "Document Service";
+  | "Portrait"
+  | "Product"
+  | "Event"
+  | "Visa"
+  | "Wedding"
+  | "Videography"
+  | "Photo Frame"
+  | "Photography"
+  | "Customized Gift"
+  | "Photo Enhancement"
+  | "Document Service";
   basePrice: string;
   duration: string;
   description: string;
@@ -279,9 +278,10 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   <span className="text-[#E50914] ml-1">CLICK</span>
                 </Typography>
                 <span className="text-[0.62rem] tracking-[0.2em] text-red-500 font-bold block uppercase -mt-0.5">
-                  RATOPUL KATHMANDU
+                  RUDRAMATI PUL, KATHMANDU
                 </span>
               </Box>
+
             </Box>
 
             {/* Desktop Navigation */}

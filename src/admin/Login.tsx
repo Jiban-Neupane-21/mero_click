@@ -130,7 +130,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 letterSpacing: "-0.02em",
               }}
             >
-              Kathmandu Studio Admin
+              Studio Mero Click Admin Panel
             </Typography>
             <Typography
               variant="body2"
