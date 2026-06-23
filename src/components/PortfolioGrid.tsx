@@ -19,7 +19,7 @@ import {
   IconButton,
   useTheme,
 } from "@mui/material";
-import { Camera, X, ZoomIn, Award, ZoomOut } from "lucide-react";
+import { Camera, X, ZoomIn, Award, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { PortfolioItem } from "../types";
 
 export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
@@ -80,6 +80,35 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
     activeTab === "all"
       ? shuffledItems
       : items.filter((item) => item.category === activeTab);
+
+  const currentIndex = selectedItem ? filteredItems.findIndex(i => i.id === selectedItem.id) : -1;
+
+  const handleNext = React.useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (currentIndex >= 0 && currentIndex < filteredItems.length - 1) {
+      setSelectedItem(filteredItems[currentIndex + 1]);
+    }
+  }, [currentIndex, filteredItems]);
+
+  const handlePrev = React.useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (currentIndex > 0) {
+      setSelectedItem(filteredItems[currentIndex - 1]);
+    }
+  }, [currentIndex, filteredItems]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedItem) return;
+      if (e.key === "ArrowRight") {
+        handleNext();
+      } else if (e.key === "ArrowLeft") {
+        handlePrev();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedItem, handleNext, handlePrev]);
 
   return (
     <Box
@@ -324,6 +353,43 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
       >
         {selectedItem && (
           <Box sx={{ position: "relative" }}>
+            {/* Prev/Next Controls */}
+            {currentIndex > 0 && (
+              <IconButton
+                onClick={handlePrev}
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: 12,
+                  transform: "translateY(-50%)",
+                  color: "#ffffff",
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  "&:hover": { backgroundColor: "rgba(0,0,0,0.8)" },
+                  zIndex: 10,
+                }}
+              >
+                <ChevronLeft size={28} />
+              </IconButton>
+            )}
+
+            {currentIndex >= 0 && currentIndex < filteredItems.length - 1 && (
+              <IconButton
+                onClick={handleNext}
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  right: 12,
+                  transform: "translateY(-50%)",
+                  color: "#ffffff",
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  "&:hover": { backgroundColor: "rgba(0,0,0,0.8)" },
+                  zIndex: 10,
+                }}
+              >
+                <ChevronRight size={28} />
+              </IconButton>
+            )}
+
             {/* Close trigger button */}
             <IconButton
               onClick={() => setSelectedItem(null)}
