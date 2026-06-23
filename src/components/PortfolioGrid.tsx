@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -18,38 +19,57 @@ import {
   IconButton,
   useTheme,
 } from "@mui/material";
-import { Camera, X, ZoomIn, Award } from "lucide-react";
+import { Camera, X, ZoomIn, Award, ZoomOut } from "lucide-react";
 import { PortfolioItem } from "../types";
 
 export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
-  const [activeTab, setActiveTab] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  
+  const [activeTab, setActiveTab] = useState(() => {
+    return categoryParam || 'all';
+  });
+  
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+  const [zoomScale, setZoomScale] = useState(1);
   const theme = useTheme();
+
+  // Reset zoom scale when item changes or modal closes
+  useEffect(() => {
+    if (!selectedItem) {
+      setZoomScale(1);
+    }
+  }, [selectedItem]);
+
+  const handleZoomIn = () => setZoomScale(prev => Math.min(prev + 0.5, 3));
+  const handleZoomOut = () => setZoomScale(prev => Math.max(prev - 0.5, 1));
+
+  // Watch for external query updates and update active filters
+  useEffect(() => {
+    if (categoryParam) {
+      setActiveTab(categoryParam);
+    } else {
+      setActiveTab('all');
+    }
+  }, [categoryParam]);
   const isDark = theme.palette.mode === "dark";
 
-  const categories = React.useMemo(() => {
-    const list = [
-      { id: "all", label: "All Projects" },
-      { id: "Wedding", label: "Wedding Photography" },
-      { id: "Portrait", label: "Executive Portraits" },
-      { id: "Studio", label: "Studio & Gear" },
-      { id: "Product", label: "Product & Catalog" },
-      { id: "Event", label: "Celebration Events" },
-      { id: "Photo Frame", label: "Photo Frames" },
-      { id: "Visa", label: "Visa & Biometrics" },
-    ];
-    const existingIds = new Set(list.map((c) => c.id.toLowerCase()));
-    items.forEach((item) => {
-      if (item.category && !existingIds.has(item.category.toLowerCase())) {
-        list.push({ id: item.category, label: item.category });
-        existingIds.add(item.category.toLowerCase());
-      }
-    });
-    return list;
-  }, [items]);
+  const categories = [
+    { id: 'all', label: 'All Projects' },
+    { id: 'Wedding', label: 'Cinematic Weddings' },
+    { id: 'Portrait', label: 'Executive Portraits' },
+    { id: 'Visa', label: 'Visa & Biometrics' },
+    { id: 'Videography', label: 'Studio & Commercial Films' },
+    { id: 'Photo Frame', label: 'Custom Framing' },
+    { id: 'Product', label: 'Product & Catalog' },
+  ];
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
-    setActiveTab(newValue);
+    if (newValue === 'all') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ category: newValue });
+    }
   };
 
   const shuffledItems = React.useMemo(() => {
@@ -321,25 +341,68 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
               <X size={18} />
             </IconButton>
 
+            {/* Zoom Controls */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 12,
+                left: 12,
+                display: "flex",
+                gap: 1,
+                zIndex: 10,
+              }}
+            >
+              <IconButton
+                onClick={handleZoomOut}
+                disabled={zoomScale <= 1}
+                sx={{
+                  color: "#ffffff",
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  "&:hover": { backgroundColor: "rgba(0,0,0,0.8)" },
+                  "&.Mui-disabled": { color: "rgba(255,255,255,0.3)" },
+                }}
+              >
+                <ZoomOut size={18} />
+              </IconButton>
+              <IconButton
+                onClick={handleZoomIn}
+                disabled={zoomScale >= 3}
+                sx={{
+                  color: "#ffffff",
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  "&:hover": { backgroundColor: "rgba(0,0,0,0.8)" },
+                  "&.Mui-disabled": { color: "rgba(255,255,255,0.3)" },
+                }}
+              >
+                <ZoomIn size={18} />
+              </IconButton>
+            </Box>
+
             <DialogContent sx={{ p: 0 }}>
               <Box
                 sx={{
                   width: "100%",
                   maxHeight: "70vh",
-                  overflow: "hidden",
+                  overflow: "auto",
                   display: "flex",
-                  justifyContent: "center",
+                  justifyContent: zoomScale > 1 ? "flex-start" : "center",
+                  alignItems: zoomScale > 1 ? "flex-start" : "center",
                   backgroundColor: "#000000",
                 }}
               >
                 <img
                   src={selectedItem.imageUrl}
                   alt={selectedItem.title}
+                  onClick={() => setZoomScale(prev => prev === 1 ? 2 : 1)}
                   style={{
-                    maxWidth: "100%",
-                    height: "auto",
-                    maxHeight: "70vh",
+                    width: zoomScale > 1 ? `${100 * zoomScale}%` : "auto",
+                    height: zoomScale > 1 ? "auto" : "auto",
+                    maxWidth: zoomScale === 1 ? "100%" : "none",
+                    maxHeight: zoomScale === 1 ? "70vh" : "none",
                     objectFit: "contain",
+                    transition: "width 0.3s ease, max-width 0.3s ease",
+                    cursor: zoomScale > 1 ? "zoom-out" : "zoom-in",
+                    margin: "auto",
                   }}
                   onError={(e: any) => {
                     e.target.onerror = null;

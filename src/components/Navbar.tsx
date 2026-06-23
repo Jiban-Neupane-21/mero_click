@@ -278,7 +278,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   <span className="text-[#E50914] ml-1">CLICK</span>
                 </Typography>
                 <span className="text-[0.62rem] tracking-[0.2em] text-red-500 font-bold block uppercase -mt-0.5">
-                  RATOPUL KATHMANDU
+                  RUDRAMATI PUL, KATHMANDU
                 </span>
               </Box>
 

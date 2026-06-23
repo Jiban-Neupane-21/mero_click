@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -28,9 +29,12 @@ interface HeroProps {
 }
 
 export default function Hero({ onNavigate }: HeroProps) {
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isDark = theme.palette.mode === "dark";
+
+ 
 
   return (
     <Box
@@ -42,7 +46,7 @@ export default function Hero({ onNavigate }: HeroProps) {
           : "linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)",
         color: "text.primary",
         pt: { xs: 8, md: 12 },
-        pb: { xs: 8, md: 14 },
+        pb: { xs: 6, md: 8 },
         overflow: "hidden",
         transition: "background-color 0.3s, color 0.3s",
       }}
@@ -481,6 +485,8 @@ export default function Hero({ onNavigate }: HeroProps) {
             </Box>
           </div>
         </div>
+
+
       </Container>
     </Box>
   );
