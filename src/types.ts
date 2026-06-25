@@ -23,17 +23,15 @@ export interface StudioService {
   id: string;
   title: string;
   category:
-    | "Portrait"
-    | "Product"
-    | "Event"
-    | "Visa"
-    | "Wedding"
-    | "Videography"
-    | "Photo Frame"
-    | "Photography"
-    | "Customized Gift"
-    | "Photo Enhancement"
-    | "Document Service";
+  | "Portrait"
+  | "Event"
+  | "Identity Photo"
+  | "Wedding"
+  | "Photo Frame"
+  | "Photography"
+  | "Customized Gift"
+  | "Photo Enhancement"
+  | "Document Service";
   basePrice: string;
   duration: string;
   description: string;
@@ -53,14 +51,13 @@ export interface PortfolioItem {
   id: string;
   title: string;
   category:
-    | "Portrait"
-    | "Product"
-    | "Event"
-    | "Studio"
-    | "Visa"
-    | "Wedding"
-    | "Videography"
-    | "Photo Frame";
+  | "Portrait"
+  | "Commercial"
+  | "Studio"
+  | "Identity Photo"
+  | "Wedding"
+  | "Photo Frame"
+  | "Customize Gifts"
   imageUrl: string;
   specLabel?: string;
   author?: string;
@@ -77,14 +74,27 @@ export interface VideoItem {
   title: string;
   youtubeId: string;
   category:
-    | "Wedding Reel"
-    | "Cinematography"
-    | "Behind the Scenes"
-    | "Studio Promo"
-    | "Commercial";
+  | "Wedding Reel"
+  | "Cinematography"
+  | "Behind the Scenes"
+  | "Studio Promo"
+  | "Commercial";
   duration: string;
   description: string;
   uploadDate: string;
+}
+
+export interface OfferAd {
+  id: string;
+  badge: string;
+  title: string;
+  discount: string;
+  description: string;
+  image: string;
+  validUntil: string;
+  actionText: string;
+  targetCategory: string;
+  accentColor: string;
 }
 
 export interface BookingDetails {
@@ -109,3 +119,27 @@ export interface EditAdjustment {
   x: number; // panning offset x
   y: number; // panning offset y
 }
+
+
+export interface TutorialVideo {
+  id: string;
+  title: string;
+  youtubeId: string;
+  category: string;
+  duration: string;
+  description: string;
+  publishedAt: string;
+}
+
+export interface LearningArticle {
+  id: string;
+  title: string;
+  category: string;
+  excerpt: string;
+  content: string;
+  readTime: string;
+  imageUrl: string;
+  publishedAt: string;
+  author: string;
+}
+

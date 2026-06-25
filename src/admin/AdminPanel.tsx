@@ -40,10 +40,11 @@ import {
   ExternalLink,
   Sparkles,
   Edit,
-  Clock
+  Clock,
+  BadgePercent,
 } from "lucide-react";
 import { apiService, isSupabaseConfigured } from "../utils/supabase";
-import { PortfolioItem, VideoItem, StudioService } from "../types";
+import { PortfolioItem, VideoItem, StudioService, OfferAd, TutorialVideo, LearningArticle } from "../types";
 
 interface AdminPanelProps {
   userEmail: string;
@@ -87,6 +88,8 @@ export default function AdminPanel({
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [offers, setOffers] = useState<OfferAd[]>([]);
+
   const [serviceForm, setServiceForm] = useState({
     title: '',
     category: 'Portrait',
@@ -98,10 +101,49 @@ export default function AdminPanel({
     featuresText: '',
   });
 
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [editingOfferId, setEditingOfferId] = useState<string | null>(null);
+  const [offerForm, setOfferForm] = useState({
+    badge: '',
+    title: '',
+    discount: '',
+    description: '',
+    image: '',
+    validUntil: '',
+    actionText: '',
+    targetCategory: 'Wedding',
+    accentColor: '#E50914',
+  });
+
+  const [tutorialVideos, setTutorialVideos] = useState<TutorialVideo[]>([]);
+  const [learningArticles, setLearningArticles] = useState<LearningArticle[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(false);
-  
 
+
+
+  // Tutorials/Articles Forms State
+  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
+  const [editingTutorialId, setEditingTutorialId] = useState<string | null>(null);
+  const [tutorialForm, setTutorialForm] = useState({
+    title: '',
+    youtubeUrlOrId: '',
+    category: 'Biometrics',
+    duration: '',
+    description: '',
+  });
+
+  const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
+  const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
+  const [articleForm, setArticleForm] = useState({
+    title: '',
+    category: 'Biometrics',
+    excerpt: '',
+    content: '',
+    readTime: '',
+    imageUrl: '',
+    author: '',
+  });
   // Load all items
   const loadDatabaseItems = async () => {
     setLoading(true);
@@ -109,9 +151,17 @@ export default function AdminPanel({
       const fetchedPortfolios = await apiService.getPortfolioItems();
       const fetchedVideos = await apiService.getVideoItems();
       const fetchedServices = await apiService.getServices();
+      const fetchedOffers = await apiService.getOffers();
+      const fetchedTutorialVideos = await apiService.getTutorialVideos();
+      const fetchedLearningArticles = await apiService.getLearningArticles();
+
       setPortfolios(fetchedPortfolios);
       setVideos(fetchedVideos);
       setServices(fetchedServices);
+      setOffers(fetchedOffers);
+      setTutorialVideos(fetchedTutorialVideos);
+      setLearningArticles(fetchedLearningArticles);
+
     } catch (err: any) {
       console.error("Error fetching admin dataset:", err);
     } finally {
@@ -420,6 +470,236 @@ export default function AdminPanel({
     }
   };
 
+  // --- SPECIAL OFFERS & ADS ACTIONS ---
+  const handleOfferFormChange = (prop: string, val: string) => {
+    setOfferForm((prev) => ({ ...prev, [prop]: val }));
+  };
+
+  const handleEditOffer = (offer: OfferAd) => {
+    setEditingOfferId(offer.id);
+    setOfferForm({
+      badge: offer.badge,
+      title: offer.title,
+      discount: offer.discount,
+      description: offer.description,
+      image: offer.image,
+      validUntil: offer.validUntil,
+      actionText: offer.actionText,
+      targetCategory: offer.targetCategory,
+      accentColor: offer.accentColor || '#E50914',
+    });
+    setIsOfferModalOpen(true);
+  };
+
+  const handleAddOfferClick = () => {
+    setEditingOfferId(null);
+    setOfferForm({
+      badge: 'LIMITED SEASON OFFER',
+      title: '',
+      discount: '15% FLAT DISCOUNT',
+      description: '',
+      image: '',
+      validUntil: 'Ends Soon',
+      actionText: 'Claim Discount',
+      targetCategory: 'Wedding',
+      accentColor: '#E50914',
+    });
+    setIsOfferModalOpen(true);
+  };
+
+  const handleSaveOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!offerForm.title || !offerForm.image || !offerForm.badge || !offerForm.discount) {
+      triggerAlert('error', 'Please provide a badge, title, discount value, and image URL.');
+      return;
+    }
+
+    try {
+      await apiService.saveOfferItem({
+        id: editingOfferId || undefined,
+        badge: offerForm.badge,
+        title: offerForm.title,
+        discount: offerForm.discount,
+        description: offerForm.description,
+        image: offerForm.image,
+        validUntil: offerForm.validUntil,
+        actionText: offerForm.actionText,
+        targetCategory: offerForm.targetCategory,
+        accentColor: offerForm.accentColor,
+      });
+
+      triggerAlert('success', editingOfferId ? 'Successfully updated promotional offer banner!' : 'Successfully launched new promotional offer!');
+      setIsOfferModalOpen(false);
+      loadDatabaseItems();
+      if (onDataChange) onDataChange();
+    } catch (err: any) {
+      triggerAlert('error', err.message || 'Error saving promotional offer details.');
+    }
+  };
+
+  const handleDeleteOffer = async (id: string, title: string) => {
+    if (window.confirm(`Are you sure you want to permanently delete offer "${title}" from the dynamic carousel?`)) {
+      try {
+        await apiService.deleteOfferItem(id);
+        triggerAlert('success', `Deleted promotional offer "${title}" successfully.`);
+        loadDatabaseItems();
+        if (onDataChange) onDataChange();
+      } catch (err: any) {
+        triggerAlert('error', err.message || 'Error deleting offer.');
+      }
+    }
+  };
+
+  // --- TUTORIALS ACTIONS ---
+  const handleTutorialFormChange = (prop: string, val: string) => {
+    setTutorialForm((prev) => ({ ...prev, [prop]: val }));
+  };
+
+  const handleEditTutorial = (tutorial: TutorialVideo) => {
+    setEditingTutorialId(tutorial.id);
+    setTutorialForm({
+      title: tutorial.title,
+      youtubeUrlOrId: tutorial.youtubeId,
+      category: tutorial.category,
+      duration: tutorial.duration,
+      description: tutorial.description,
+    });
+    setIsTutorialModalOpen(true);
+  };
+
+  const handleAddTutorialClick = () => {
+    setEditingTutorialId(null);
+    setTutorialForm({
+      title: '',
+      youtubeUrlOrId: '',
+      category: 'Biometrics',
+      duration: '8:00',
+      description: '',
+    });
+    setIsTutorialModalOpen(true);
+  };
+
+  const handleSaveTutorial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tutorialForm.title || !tutorialForm.youtubeUrlOrId) {
+      triggerAlert('error', 'Please enter a title and YouTube video URL or ID.');
+      return;
+    }
+
+    const youtubeId = extractYoutubeId(tutorialForm.youtubeUrlOrId);
+    if (youtubeId.length !== 11) {
+      triggerAlert('error', 'Unable to parse standard YouTube video ID. Ensure link is correct.');
+      return;
+    }
+
+    try {
+      await apiService.saveTutorialVideo({
+        id: editingTutorialId || undefined,
+        title: tutorialForm.title,
+        youtubeId: youtubeId,
+        category: tutorialForm.category,
+        duration: tutorialForm.duration,
+        description: tutorialForm.description,
+        publishedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      });
+
+      triggerAlert('success', editingTutorialId ? 'Successfully updated tutorial video details!' : 'Successfully created new tutorial video!');
+      setIsTutorialModalOpen(false);
+      loadDatabaseItems();
+      if (onDataChange) onDataChange();
+    } catch (err: any) {
+      triggerAlert('error', err.message || 'Error saving tutorial video.');
+    }
+  };
+
+  const handleDeleteTutorial = async (id: string, title: string) => {
+    if (window.confirm(`Are you sure you want to permanently delete tutorial "${title}"?`)) {
+      try {
+        await apiService.deleteTutorialVideo(id);
+        triggerAlert('success', `Deleted tutorial "${title}" successfully.`);
+        loadDatabaseItems();
+        if (onDataChange) onDataChange();
+      } catch (err: any) {
+        triggerAlert('error', err.message || 'Error deleting tutorial.');
+      }
+    }
+  };
+
+  // --- ARTICLES ACTIONS ---
+  const handleArticleFormChange = (prop: string, val: string) => {
+    setArticleForm((prev) => ({ ...prev, [prop]: val }));
+  };
+
+  const handleEditArticle = (article: LearningArticle) => {
+    setEditingArticleId(article.id);
+    setArticleForm({
+      title: article.title,
+      category: article.category,
+      excerpt: article.excerpt,
+      content: article.content,
+      readTime: article.readTime,
+      imageUrl: article.imageUrl,
+      author: article.author,
+    });
+    setIsArticleModalOpen(true);
+  };
+
+  const handleAddArticleClick = () => {
+    setEditingArticleId(null);
+    setArticleForm({
+      title: '',
+      category: 'Biometrics',
+      excerpt: '',
+      content: '',
+      readTime: '5 mins read',
+      imageUrl: '',
+      author: 'Studio Specialist',
+    });
+    setIsArticleModalOpen(true);
+  };
+
+  const handleSaveArticle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!articleForm.title || !articleForm.content || !articleForm.excerpt) {
+      triggerAlert('error', 'Please provide a title, excerpt, and content.');
+      return;
+    }
+
+    try {
+      await apiService.saveLearningArticle({
+        id: editingArticleId || undefined,
+        title: articleForm.title,
+        category: articleForm.category,
+        excerpt: articleForm.excerpt,
+        content: articleForm.content,
+        readTime: articleForm.readTime,
+        imageUrl: articleForm.imageUrl,
+        author: articleForm.author,
+        publishedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      });
+
+      triggerAlert('success', editingArticleId ? 'Successfully updated learning article details!' : 'Successfully created new learning article!');
+      setIsArticleModalOpen(false);
+      loadDatabaseItems();
+      if (onDataChange) onDataChange();
+    } catch (err: any) {
+      triggerAlert('error', err.message || 'Error saving learning article.');
+    }
+  };
+
+  const handleDeleteArticle = async (id: string, title: string) => {
+    if (window.confirm(`Are you sure you want to permanently delete article "${title}"?`)) {
+      try {
+        await apiService.deleteLearningArticle(id);
+        triggerAlert('success', `Deleted learning article "${title}" successfully.`);
+        loadDatabaseItems();
+        if (onDataChange) onDataChange();
+      } catch (err: any) {
+        triggerAlert('error', err.message || 'Error deleting article.');
+      }
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -542,6 +822,8 @@ export default function AdminPanel({
               iconPosition="start"
             />
             <Tab icon={<Sparkles size={18} />} label="Manage Studio Specialties" iconPosition="start" />
+            <Tab icon={<BadgePercent size={18} />} label="Manage Promo Offers & Ads" iconPosition="start" />
+
           </Tabs>
         </Box>
 
@@ -1126,16 +1408,16 @@ export default function AdminPanel({
                                   ))}
                                 {(Array.isArray(item.features) ? item.features : [])
                                   .length > 3 && (
-                                  <Chip
-                                    label={`+${item.features.length - 3} more`}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: "rgba(255,255,255,0.04)",
-                                      color: "rgba(255,255,255,0.5)",
-                                      fontSize: "0.65rem",
-                                    }}
-                                  />
-                                )}
+                                    <Chip
+                                      label={`+${item.features.length - 3} more`}
+                                      size="small"
+                                      sx={{
+                                        backgroundColor: "rgba(255,255,255,0.04)",
+                                        color: "rgba(255,255,255,0.5)",
+                                        fontSize: "0.65rem",
+                                      }}
+                                    />
+                                  )}
                               </div>
                             </Box>
                           )}
@@ -1172,6 +1454,157 @@ export default function AdminPanel({
                               color: "#f43f5e",
                               "&:hover": { backgroundColor: "rgba(244,63,94,0.08)" },
                             }}
+                          >
+                            <Trash2 size={16} />
+                          </IconButton>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Box>
+        )}
+
+        {/* ==================================== PROMO OFFERS & ADS VIEW ==================================== */}
+        {activeTab === 3 && (
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1.5 }}>
+              <Typography variant="h5" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600 }}>
+                Active Promotional Offers & Ads Carousel ({offers.length} active)
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={handleAddOfferClick}
+                startIcon={<PlusCircle size={16} />}
+                sx={{
+                  backgroundColor: '#E50914',
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: 'none',
+                  borderRadius: '6px',
+                  fontWeight: 600,
+                  '&:hover': { backgroundColor: '#b91c1c' },
+                }}
+              >
+                Add Promo Offer / Ad
+              </Button>
+            </Box>
+
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <CircularProgress sx={{ color: '#E50914' }} />
+              </Box>
+            ) : offers.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8, border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                <Typography color="textSecondary" sx={{ mb: 2 }}>No promotional offers defined yet.</Typography>
+                <Button variant="outlined" onClick={handleAddOfferClick} sx={{ color: '#E50914', borderColor: '#E50914', textTransform: 'none' }}>
+                  Create First Dynamic Offer
+                </Button>
+              </Box>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {offers.map((item) => (
+                  <div key={item.id}>
+                    <Card
+                      sx={{
+                        background: '#121214',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        transition: 'transform 0.2s',
+                        '&:hover': { transform: 'scale(1.01)' }
+                      }}
+                    >
+                      <Box sx={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          referrerPolicy="no-referrer"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <Box sx={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 1 }}>
+                          <Chip
+                            label={item.badge}
+                            size="small"
+                            sx={{
+                              backgroundColor: item.accentColor || '#E50914',
+                              color: '#ffffff',
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                            }}
+                          />
+                          <Chip
+                            label={item.targetCategory}
+                            size="small"
+                            sx={{
+                              backgroundColor: 'rgba(0,0,0,0.85)',
+                              color: '#ffffff',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                            }}
+                          />
+                        </Box>
+                        {item.validUntil && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              bottom: 8,
+                              right: 8,
+                              backgroundColor: 'rgba(0,0,0,0.8)',
+                              color: '#ffffff',
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: '3px',
+                              fontSize: '0.7rem',
+                              fontWeight: 650,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5
+                            }}
+                          >
+                            <Clock size={10} className="text-[#E50914]" />
+                            {item.validUntil}
+                          </Box>
+                        )}
+                      </Box>
+                      <CardContent sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="overline" sx={{ color: item.accentColor || '#E50914', fontWeight: 800, fontSize: '0.75rem', display: 'block', mb: 0.5 }}>
+                            {item.discount}
+                          </Typography>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, lineHeight: 1.3, color: '#ffffff' }}>
+                            {item.title}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2, fontSize: '0.82rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {item.description}
+                          </Typography>
+                          {item.actionText && (
+                            <div className="flex justify-between items-center bg-[#18181c] p-2.5 rounded border border-white/[0.04] mb-3">
+                              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>Action Label:</Typography>
+                              <Typography variant="subtitle2" sx={{ color: '#ffffff', fontWeight: 600, fontSize: '0.75rem' }}>{item.actionText}</Typography>
+                            </div>
+                          )}
+                        </Box>
+
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 1.5, borderTop: '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
+                          <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => handleEditOffer(item)}
+                            startIcon={<Edit size={14} />}
+                            sx={{ color: '#38bdf8', textTransform: 'none', fontFamily: '"Space Grotesk"', fontSize: '0.75rem' }}
+                          >
+                            Edit Offer
+                          </Button>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteOffer(item.id, item.title)}
+                            sx={{ color: '#f43f5e', '&:hover': { backgroundColor: 'rgba(244,63,94,0.08)' } }}
                           >
                             <Trash2 size={16} />
                           </IconButton>
@@ -1267,13 +1700,12 @@ export default function AdminPanel({
               >
                 {[
                   "Portrait",
-                  "Product",
-                  "Event",
+                  "Commercial",
                   "Studio",
-                  "Visa",
+                  "Identity Photo",
                   "Wedding",
-                  "Videography",
                   "Photo Frame",
+                  "Customize Gifts",
                 ].map((cat) => (
                   <MenuItem key={cat} value={cat}>
                     {cat}
@@ -2096,6 +2528,239 @@ export default function AdminPanel({
                 }}
               >
                 {editingServiceId ? "Update Service" : "Activate Service"}
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
+
+        {/* ==================================== MODAL DIALOG: ADD/EDIT PROMO OFFER ==================================== */}
+        <Dialog
+          open={isOfferModalOpen}
+          onClose={() => setIsOfferModalOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          sx={{
+            '& .MuiPaper-root': {
+              backgroundColor: '#18181b',
+              backgroundImage: 'none',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              color: '#ffffff',
+            },
+          }}
+        >
+          <Box component="form" onSubmit={handleSaveOffer}>
+            <DialogTitle sx={{ borderBottom: '1px solid rgba(255,255,255,0.08)', fontFamily: '"Space Grotesk"', fontWeight: 700 }}>
+              {editingOfferId ? 'Edit Active Promotion Offer' : 'Launch New Promotional Offer'}
+            </DialogTitle>
+            <DialogContent sx={{ p: 4 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <TextField
+                  fullWidth
+                  label="Promo Badge Text"
+                  placeholder="e.g. LIMITED SEASON OFFER"
+                  required
+                  value={offerForm.badge}
+                  onChange={(e) => handleOfferFormChange('badge', e.target.value)}
+                  slotProps={{
+                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                    input: { style: { color: '#ffffff' } }
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                      '&:hover fieldset': { borderColor: '#E50914' },
+                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                    }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Discount Overline Value"
+                  placeholder="e.g. 15% FLAT DISCOUNT"
+                  required
+                  value={offerForm.discount}
+                  onChange={(e) => handleOfferFormChange('discount', e.target.value)}
+                  slotProps={{
+                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                    input: { style: { color: '#ffffff' } }
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                      '&:hover fieldset': { borderColor: '#E50914' },
+                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                    }
+                  }}
+                />
+              </div>
+
+              <TextField
+                fullWidth
+                label="Offer Campaign Title"
+                placeholder="e.g. Monsoon Wedding Film Premium Package"
+                margin="normal"
+                required
+                value={offerForm.title}
+                onChange={(e) => handleOfferFormChange('title', e.target.value)}
+                slotProps={{
+                  inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                  input: { style: { color: '#ffffff' } }
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                    '&:hover fieldset': { borderColor: '#E50914' },
+                    '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                  }
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Promo Banner Image URL"
+                placeholder="https://images.unsplash.com/..."
+                margin="normal"
+                required
+                value={offerForm.image}
+                onChange={(e) => handleOfferFormChange('image', e.target.value)}
+                slotProps={{
+                  inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                  input: { style: { color: '#ffffff' } }
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                    '&:hover fieldset': { borderColor: '#E50914' },
+                    '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                  }
+                }}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                <TextField
+                  fullWidth
+                  label="Validity Date / Text"
+                  placeholder="e.g. Ends June 30, 2026"
+                  required
+                  value={offerForm.validUntil}
+                  onChange={(e) => handleOfferFormChange('validUntil', e.target.value)}
+                  slotProps={{
+                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                    input: { style: { color: '#ffffff' } }
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                      '&:hover fieldset': { borderColor: '#E50914' },
+                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                    }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="CTA Action Button Label"
+                  placeholder="e.g. Claim 15% Discount"
+                  required
+                  value={offerForm.actionText}
+                  onChange={(e) => handleOfferFormChange('actionText', e.target.value)}
+                  slotProps={{
+                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                    input: { style: { color: '#ffffff' } }
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                      '&:hover fieldset': { borderColor: '#E50914' },
+                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <TextField
+                  select
+                  fullWidth
+                  label="Target Portfolio Category"
+                  value={offerForm.targetCategory}
+                  onChange={(e) => handleOfferFormChange('targetCategory', e.target.value)}
+                  slotProps={{
+                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                    input: { style: { color: '#ffffff' } }
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                      '&:hover fieldset': { borderColor: '#E50914' },
+                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                    }
+                  }}
+                >
+                  {['Wedding', 'Visa', 'Portrait', 'Event', 'Commercial'].map((cat) => (
+                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  fullWidth
+                  label="Brand Theme Accent Color"
+                  value={offerForm.accentColor}
+                  onChange={(e) => handleOfferFormChange('accentColor', e.target.value)}
+                  slotProps={{
+                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                    input: { style: { color: '#ffffff' } }
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                      '&:hover fieldset': { borderColor: '#E50914' },
+                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                    }
+                  }}
+                >
+                  <MenuItem value="#E50914">Crimson Red (#E50914)</MenuItem>
+                  <MenuItem value="#10B981">Emerald Green (#10B981)</MenuItem>
+                  <MenuItem value="#3B82F6">Royal Blue (#3B82F6)</MenuItem>
+                  <MenuItem value="#F59E0B">Amber Gold (#F59E0B)</MenuItem>
+                  <MenuItem value="#8B5CF6">Amethyst Purple (#8B5CF6)</MenuItem>
+                </TextField>
+              </div>
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Offer Campaign Description"
+                placeholder="Describe details, conditions, bundles, or timeline criteria of this promotional deal..."
+                margin="normal"
+                required
+                value={offerForm.description}
+                onChange={(e) => handleOfferFormChange('description', e.target.value)}
+                slotProps={{
+                  inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
+                  input: { style: { color: '#ffffff' } }
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                    '&:hover fieldset': { borderColor: '#E50914' },
+                    '&.Mui-focused fieldset': { borderColor: '#E50914' },
+                  }
+                }}
+              />
+            </DialogContent>
+            <DialogActions sx={{ p: 3, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <Button onClick={() => setIsOfferModalOpen(false)} sx={{ color: '#a1a1aa' }}>Cancel</Button>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{ backgroundColor: '#E50914', '&:hover': { backgroundColor: '#b91c1c' } }}
+              >
+                {editingOfferId ? 'Update Promo Offer' : 'Launch Promo Offer'}
               </Button>
             </DialogActions>
           </Box>

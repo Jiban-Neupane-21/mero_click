@@ -1313,7 +1313,7 @@ export default function BookingPortal({
                       }}
                     >
                       <MapPin size={14} className="text-[#E50914]" />
-                      Rudramati Pul Anamnagar
+                      Rudramati Chowk Anamnagar
                     </Typography>
                   </div>
                 </div>

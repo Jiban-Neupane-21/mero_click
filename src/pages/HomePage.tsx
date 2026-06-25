@@ -119,7 +119,67 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
         <path d="M9 12h7M9 16h7" />
       </>
     ),
+    layout: (
+      <>
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <line x1="3" y1="9" x2="21" y2="9" />
+        <line x1="9" y1="21" x2="9" y2="9" />
+      </>
+    ),
+    leaf: (
+      <>
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+      </>
+    ),
+    archive: (
+      <>
+        <rect x="3" y="4" width="18" height="4" rx="2" ry="2" />
+        <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" />
+        <line x1="10" y1="12" x2="14" y2="12" />
+      </>
+    ),
+    coffee: (
+      <>
+        <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+        <line x1="6" y1="1" x2="6" y2="4" />
+        <line x1="10" y1="1" x2="10" y2="4" />
+        <line x1="14" y1="1" x2="14" y2="4" />
+      </>
+    ),
   };
+
+  const PRODUCTS = [
+    {
+      title: "Photoframe",
+      icon: "frame",
+    },
+    {
+      title: "Cup Prints",
+      icon: "coffee",
+    },
+    {
+      title: "Polaroid Prints",
+      icon: "camera",
+    },
+    {
+      title: "Collages",
+      icon: "layout",
+    },
+    {
+      title: "Customized Designed Photo",
+      icon: "edit",
+    },
+    {
+      title: "Dubo ko Mala",
+      icon: "leaf",
+    },
+    {
+      title: "Rose & Mala Preservation",
+      icon: "archive",
+    },
+  ];
 
   const SERVICES = [
     {
@@ -282,8 +342,6 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
           <Box
             sx={{
               position: "absolute",
-              bottom: "-30px",
-              right: "-30px",
               width: "180px",
               height: "180px",
               opacity: hover ? (isDark ? 0.08 : 0.05) : (isDark ? 0.03 : 0.02),
@@ -308,71 +366,13 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
             </svg>
           </Box>
 
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 3, position: "relative", zIndex: 1 }}>
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: "12px",
-                bgcolor: hover ? COLORS.stamp : "rgba(229, 9, 20, 0.08)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: hover ? "#FFFFFF" : COLORS.stamp,
-                transition: "background-color 0.4s ease, color 0.4s ease, transform 0.4s cubic-bezier(.2,.8,.2,1)",
-                transform: hover ? "scale(1.08) rotate(-4deg)" : "scale(1) rotate(0deg)",
-              }}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                {ICONS[item.icon]}
-              </svg>
-            </Box>
-            {/* The item.code badge was removed by user, leaving empty space */}
-          </Box>
-
-          <Typography
-            sx={{
-              position: "relative",
-              zIndex: 1,
-              fontFamily: '"Space Grotesk", sans-serif',
-              fontWeight: 700,
-              fontSize: "1.25rem",
-              lineHeight: 1.25,
-              color: COLORS.ink,
-              mb: 1.5,
-              letterSpacing: "-0.01em",
-            }}
-          >
-            {item.title}
-          </Typography>
-
-          <Typography
-            sx={{
-              position: "relative",
-              zIndex: 1,
-              fontSize: "0.95rem",
-              lineHeight: 1.6,
-              color: COLORS.grey,
-              fontWeight: 400,
-              flexGrow: 1,
-            }}
-          >
-            {item.copy}
-          </Typography>
-
           <Box
             sx={{
               position: "relative",
               zIndex: 1,
+              top: "80%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -407,7 +407,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
                   }}
                 />
               )}
-              {item.tag}
+              {item.title}
             </Typography>
             <Box
               sx={{
@@ -873,7 +873,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
               textAlign: "center",
             }}
           >
-            Our Modern Portrait & Media Specialties
+            Products We Offer
           </Typography>
           <Typography
             variant="body1"
@@ -885,9 +885,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
               fontWeight: 300,
             }}
           >
-            We are Kathmandu’s leading studio for biometric validations,
-            majestic wedding videography, custom-crafted photo framing, and
-            corporate brand headshots.
+            Explore our beautifully crafted physical products and preservation services, creating timeless keepsakes for your memories.
           </Typography>
           <Box sx={{ bgcolor: COLORS.paper, py: { xs: 6, md: 8 }, px: { xs: 2, md: 3 } }}>
             <Box sx={{ maxWidth: 1180, mx: "auto" }}>
@@ -906,12 +904,12 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
                   gap: 3.5,
                 }}
               >
-                {SERVICES.map((item, index) => (
+                {PRODUCTS.map((item, index) => (
                   <ServiceCard
                     key={item.title}
                     item={item}
                     index={index}
-                    onClick={() => handleClick(item)}
+                    onClick={() => { }}
                   />
                 ))}
               </Box>

@@ -34,13 +34,15 @@ import PricingPage from "./pages/PricingPage";
 import BookingPage from "./pages/BookingPage";
 import VideoSection from "./pages/VideoPage";
 import AdminRoutes from "./routes/AdminRoutes";
+import LearnFromUs from './pages/LearnFromUsPage';
+
 import { Camera, MapPin, ExternalLink, Mail, PhoneCall } from "lucide-react";
 
 import logo from "./assets/Mero Click.png";
 
 export const ColorModeContext = createContext({
   mode: "dark" as "dark" | "light",
-  toggleColorMode: () => {},
+  toggleColorMode: () => { },
 });
 
 function AppContent() {
@@ -82,6 +84,9 @@ function AppContent() {
         return "/video";
       case "visa-guides":
         return "/visa-guides";
+      case 'learn-from-us':
+        return '/learn';
+
       case "resizer":
         return "/resizer";
       case "pricing":
@@ -108,6 +113,8 @@ function AppContent() {
         return "contact";
       case "/video":
         return "video";
+      case '/learn':
+        return 'learn-from-us';
       case "/visa-guides":
         return "visa-guides";
       case "/resizer":
@@ -150,6 +157,7 @@ function AppContent() {
           <Route path="/faqs" element={<FaqsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/video" element={<VideoSection />} />
+          <Route path='/learn' element={<LearnFromUs />} />
           <Route
             path="/visa-guides"
             element={

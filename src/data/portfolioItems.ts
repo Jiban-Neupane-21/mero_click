@@ -27,7 +27,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: "p3",
     title: "Nepalese Bride Traditional Cinematic Video",
-    category: "Videography",
+    category: "Studio",
     imageUrl:
       "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=600",
     specLabel: "Commercial Reels & Cinematic Grade",
@@ -45,30 +45,22 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: "p5",
     title: "ERAS Academic Residency Matching Photo",
-    category: "Visa",
+    category: "Identity Photo",
     imageUrl:
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600",
-    specLabel: "Official ERAS Sized Format",
-    author: "Biometric Office",
+    specLabel: "Light Grey #C4C4C4 Backdrop",
+    author: "Biometrics Compliance Team",
   },
   {
     id: "p6",
-    title: "Authentic Traditional Newari Wedding Vlog",
-    category: "Wedding",
+    title: "High-End Retail Commercial Perfume Shot",
+    category: "Commercial",
     imageUrl:
-      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=600",
-    specLabel: "Pre-wedding Storytelling Film",
-    author: "Cinematography Director",
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600",
+    specLabel: "Macro Lighting & Editing",
+    author: "Product Specialist",
   },
-  {
-    id: "p7",
-    title: "Corporate Story Commercial Shoot",
-    category: "Videography",
-    imageUrl:
-      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=600",
-    specLabel: "Sony FX3 4K Production",
-    author: "Video Production Team",
-  },
+
   {
     id: "p8",
     title: "Glossy Collage Frame with Family Shots",
@@ -78,13 +70,5 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     specLabel: "Multi-opening Board Matte Wood",
     author: "Print Lab, Kathmandu",
   },
-  {
-    id: "p9",
-    title: "Compliant DV Lottery & Passport Face Profile",
-    category: "Visa",
-    imageUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600",
-    specLabel: "Guaranteed Biometric Compliant Portrait",
-    author: "Passport Specialist",
-  },
+
 ];

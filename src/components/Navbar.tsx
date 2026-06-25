@@ -50,6 +50,13 @@ import {
   Image as ImageIcon,
   VideoIcon,
   Lock,
+  Instagram,
+  Facebook,
+  Youtube,
+  MessageCircle,
+  Mail,
+  Phone,
+  BookOpen,
 } from "lucide-react";
 import { ColorModeContext } from "../App";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -62,7 +69,7 @@ export interface StudioService {
   | "Portrait"
   | "Product"
   | "Event"
-  | "Visa"
+  | "Identity Photo"
   | "Wedding"
   | "Videography"
   | "Photo Frame"
@@ -108,8 +115,8 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
   // Customized Kathmandu services menu category list
   const serviceCategories: ServiceMenuItem[] = [
     {
-      label: "Passport & Visa",
-      value: "Visa",
+      label: "Identity Photo",
+      value: "Identity Photo",
       section: "services",
       icon: FileText,
     },
@@ -126,12 +133,6 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
       icon: Heart,
     },
     {
-      label: "Cinematic Video",
-      value: "Videography",
-      section: "services",
-      icon: Video,
-    },
-    {
       label: "Premium Photo Framing",
       value: "Photo Frame",
       section: "services",
@@ -145,7 +146,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
     },
     {
       label: "Product & E-Commerce",
-      value: "Product",
+      value: "Customized Gift",
       section: "services",
       icon: ShoppingBag,
     },
@@ -172,11 +173,13 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
   const primaryMenuItems = [
     { label: "Portfolio", section: "portfolio", icon: Film },
     { label: "Video", section: "video", icon: VideoIcon },
-    { label: "FAQs", section: "faqs", icon: HelpCircle },
     { label: "Contact", section: "contact", icon: PhoneCall },
+    { label: 'Learn From Us', section: 'learn-from-us', icon: BookOpen },
+
   ];
 
   const otherMenuItems = [
+    { label: "FAQs", section: "faqs", icon: HelpCircle },
     { label: "Visa Guides & Resizer", section: "visa-guides", icon: ImageIcon },
     { label: "Pricing Sheets", section: "pricing", icon: DollarSign },
   ];
@@ -222,6 +225,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
 
   return (
     <>
+
       <AppBar
         position="sticky"
         elevation={0}
@@ -237,6 +241,215 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
         }}
         id="navbar-appbar"
       >
+        {/* Top Utility Bar (Camera-like design) */}
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            backgroundColor: isDark ? "#050505" : "#0f172a",
+            color: "#94a3b8",
+            py: 0.75,
+            borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.1)"}`,
+            fontSize: "0.75rem",
+            fontFamily: '"Space Grotesk", sans-serif',
+          }}
+          id="navbar-top-utility-bar"
+        >
+          <Container maxWidth="xl">
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 2,
+              }}
+            >
+              {/* Left: Contact Info */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 2, sm: 4 } }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, transition: 'color 0.2s', '&:hover': { color: '#ffffff' }, cursor: 'pointer' }}>
+                  <Phone size={14} className="text-[#E50914]" />
+                  <Typography variant="caption" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>
+                    +977-9823367428
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, transition: 'color 0.2s', '&:hover': { color: '#ffffff' }, cursor: 'pointer' }}>
+                  <Mail size={14} className="text-[#E50914]" />
+                  <Typography variant="caption" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>
+                    studiomeroclick@gmail.com
+
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Right: Social Media */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    fontSize: '0.65rem',
+                    mr: 1,
+                    opacity: 0.7,
+                    display: { xs: 'none', sm: 'block' }
+                  }}
+                >
+                  FOLLOW US:
+                </Typography>
+
+                {/* Facebook */}
+                <Button
+                  component="a"
+                  href="https://facebook.com/studiomeroclick"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    minWidth: '26px',
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '4px',
+                    p: 0,
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#94a3b8',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      color: '#ffffff',
+                      backgroundColor: '#1877F2',
+                      borderColor: '#1877F2',
+                    }
+                  }}
+                  title="Follow on Facebook"
+                >
+                  <Facebook size={12} />
+                </Button>
+
+                {/* Instagram */}
+                <Button
+                  component="a"
+                  href="https://instagram.com/studiomeroclick"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    minWidth: '26px',
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '4px',
+                    p: 0,
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#94a3b8',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      color: '#ffffff',
+                      backgroundColor: '#E1306C',
+                      borderColor: '#E1306C',
+                    }
+                  }}
+                  title="Follow on Instagram"
+                >
+                  <Instagram size={12} />
+                </Button>
+
+                {/* TikTok */}
+                <Button
+                  component="a"
+                  href="https://tiktok.com/@studiomeroclick"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    minWidth: '26px',
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '4px',
+                    p: 0,
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#94a3b8',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      color: '#ffffff',
+                      backgroundColor: '#000000',
+                      borderColor: '#000000',
+                    }
+                  }}
+                  title="Follow on TikTok"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5v3a3 3 0 0 1-3-3" />
+                  </svg>
+                </Button>
+
+                {/* Youtube */}
+                <Button
+                  component="a"
+                  href="https://youtube.com/@studiomeroclick"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    minWidth: '26px',
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '4px',
+                    p: 0,
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#94a3b8',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      color: '#ffffff',
+                      backgroundColor: '#FF0000',
+                      borderColor: '#FF0000',
+                    }
+                  }}
+                  title="Subscribe on YouTube"
+                >
+                  <Youtube size={12} />
+                </Button>
+
+                {/* WhatsApp */}
+                <Button
+                  component="a"
+                  href="https://wa.me/+9779823367428"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    minWidth: '26px',
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '4px',
+                    p: 0,
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#94a3b8',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      color: '#ffffff',
+                      backgroundColor: '#25D366',
+                      borderColor: '#25D366',
+                    }
+                  }}
+                  title="Chat on WhatsApp"
+                >
+                  <MessageCircle size={12} />
+                </Button>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
         <Container maxWidth="xl">
           <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
             {/* Elegant Kathmandu Branding Logo */}
@@ -278,7 +491,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   <span className="text-[#E50914] ml-1">CLICK</span>
                 </Typography>
                 <span className="text-[0.62rem] tracking-[0.2em] text-red-500 font-bold block uppercase -mt-0.5">
-                  RUDRAMATI PUL, KATHMANDU
+                  RUDRAMATI CHOWK, KATHMANDU
                 </span>
               </Box>
 
