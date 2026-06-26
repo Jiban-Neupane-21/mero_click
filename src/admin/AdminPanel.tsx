@@ -33,18 +33,28 @@ import {
   Trash2,
   Upload,
   Link as LinkIcon,
+  KeyRound,
+  ExternalLink,
   CheckCircle,
   Eye,
   AlertCircle,
-  KeyRound,
-  ExternalLink,
   Sparkles,
   Edit,
   Clock,
   BadgePercent,
+  PlaySquare,
+  BookOpen,
+  Briefcase,
 } from "lucide-react";
 import { apiService, isSupabaseConfigured } from "../utils/supabase";
-import { PortfolioItem, VideoItem, StudioService, OfferAd, TutorialVideo, LearningArticle } from "../types";
+import {
+  PortfolioItem,
+  VideoItem,
+  StudioService,
+  OfferAd,
+  TutorialVideo,
+  LearningArticle,
+} from "../types";
 
 interface AdminPanelProps {
   userEmail: string;
@@ -91,58 +101,60 @@ export default function AdminPanel({
   const [offers, setOffers] = useState<OfferAd[]>([]);
 
   const [serviceForm, setServiceForm] = useState({
-    title: '',
-    category: 'Portrait',
-    basePrice: '',
-    duration: '',
-    description: '',
+    title: "",
+    category: "Portrait",
+    basePrice: "",
+    duration: "",
+    description: "",
     rating: 5.0,
-    imageUrl: '',
-    featuresText: '',
+    imageUrl: "",
+    featuresText: "",
   });
 
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [editingOfferId, setEditingOfferId] = useState<string | null>(null);
   const [offerForm, setOfferForm] = useState({
-    badge: '',
-    title: '',
-    discount: '',
-    description: '',
-    image: '',
-    validUntil: '',
-    actionText: '',
-    targetCategory: 'Wedding',
-    accentColor: '#E50914',
+    badge: "",
+    title: "",
+    discount: "",
+    description: "",
+    image: "",
+    validUntil: "",
+    actionText: "",
+    targetCategory: "Wedding",
+    accentColor: "#E50914",
   });
 
   const [tutorialVideos, setTutorialVideos] = useState<TutorialVideo[]>([]);
-  const [learningArticles, setLearningArticles] = useState<LearningArticle[]>([]);
+  const [learningArticles, setLearningArticles] = useState<LearningArticle[]>(
+    [],
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(false);
 
-
-
   // Tutorials/Articles Forms State
   const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
-  const [editingTutorialId, setEditingTutorialId] = useState<string | null>(null);
+  const [editingTutorialId, setEditingTutorialId] = useState<string | null>(
+    null,
+  );
   const [tutorialForm, setTutorialForm] = useState({
-    title: '',
-    youtubeUrlOrId: '',
-    category: 'Biometrics',
-    duration: '',
-    description: '',
+    title: "",
+    youtubeUrlOrId: "",
+    category: "Biometrics",
+    duration: "",
+    description: "",
   });
 
   const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
   const [articleForm, setArticleForm] = useState({
-    title: '',
-    category: 'Biometrics',
-    excerpt: '',
-    content: '',
-    readTime: '',
-    imageUrl: '',
-    author: '',
+    title: "",
+    category: "Biometrics",
+    excerpt: "",
+    content: "",
+    readTime: "",
+    imageUrl: "",
+    author: "",
   });
   // Load all items
   const loadDatabaseItems = async () => {
@@ -161,7 +173,6 @@ export default function AdminPanel({
       setOffers(fetchedOffers);
       setTutorialVideos(fetchedTutorialVideos);
       setLearningArticles(fetchedLearningArticles);
-
     } catch (err: any) {
       console.error("Error fetching admin dataset:", err);
     } finally {
@@ -173,11 +184,11 @@ export default function AdminPanel({
     loadDatabaseItems();
     if (isSupabaseConfigured) {
       console.log(
-        "Supabase Instance Connected! Modifications will synchronize directly onto your PostgreSQL tables."
+        "Supabase Instance Connected! Modifications will synchronize directly onto your PostgreSQL tables.",
       );
     } else {
       console.warn(
-        "Running in local sandbox mode. Changes will persist directly inside your browser's persistent key-value localStorage. Connect VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY env parameters to sync live!"
+        "Running in local sandbox mode. Changes will persist directly inside your browser's persistent key-value localStorage. Connect VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY env parameters to sync live!",
       );
     }
   }, []);
@@ -199,10 +210,28 @@ export default function AdminPanel({
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        triggerAlert(
+          "error",
+          "Image size exceeds 5MB limit. Please upload a smaller image.",
+        );
+        e.target.value = "";
+        return;
+      }
       setImageFile(file);
       // Generate a temporary local URL for preview
       const objectUrl = URL.createObjectURL(file);
-      setPortfolioForm((p) => ({ ...p, imageUrl: objectUrl }));
+
+      if (isPortfolioModalOpen) {
+        setPortfolioForm((p) => ({ ...p, imageUrl: objectUrl }));
+      } else if (isServiceModalOpen) {
+        setServiceForm((s) => ({ ...s, imageUrl: objectUrl }));
+      } else if (isOfferModalOpen) {
+        setOfferForm((o) => ({ ...o, image: objectUrl }));
+      } else if (isArticleModalOpen) {
+        setArticleForm((a) => ({ ...a, imageUrl: objectUrl }));
+      }
+
       triggerAlert("success", `Image "${file.name}" ready to upload.`);
     }
   };
@@ -486,66 +515,102 @@ export default function AdminPanel({
       validUntil: offer.validUntil,
       actionText: offer.actionText,
       targetCategory: offer.targetCategory,
-      accentColor: offer.accentColor || '#E50914',
+      accentColor: offer.accentColor || "#E50914",
     });
     setIsOfferModalOpen(true);
+    setImageFile(null);
   };
 
   const handleAddOfferClick = () => {
     setEditingOfferId(null);
     setOfferForm({
-      badge: 'LIMITED SEASON OFFER',
-      title: '',
-      discount: '15% FLAT DISCOUNT',
-      description: '',
-      image: '',
-      validUntil: 'Ends Soon',
-      actionText: 'Claim Discount',
-      targetCategory: 'Wedding',
-      accentColor: '#E50914',
+      badge: "LIMITED SEASON OFFER",
+      title: "",
+      discount: "15% FLAT DISCOUNT",
+      description: "",
+      image: "",
+      validUntil: "Ends Soon",
+      actionText: "Claim Discount",
+      targetCategory: "Wedding",
+      accentColor: "#E50914",
     });
     setIsOfferModalOpen(true);
+    setImageFile(null);
   };
 
   const handleSaveOffer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!offerForm.title || !offerForm.image || !offerForm.badge || !offerForm.discount) {
-      triggerAlert('error', 'Please provide a badge, title, discount value, and image URL.');
+    if (
+      !offerForm.title ||
+      (!offerForm.image && !imageFile) ||
+      !offerForm.badge ||
+      !offerForm.discount
+    ) {
+      triggerAlert(
+        "error",
+        "Please provide a badge, title, discount value, and select/upload an image.",
+      );
       return;
     }
 
     try {
+      let finalImageUrl = offerForm.image;
+
+      if (imageFile) {
+        setUploadProgress(true);
+        triggerAlert("info", "Uploading image...");
+        finalImageUrl = await apiService.uploadImage(imageFile);
+        setUploadProgress(false);
+      }
+
       await apiService.saveOfferItem({
         id: editingOfferId || undefined,
         badge: offerForm.badge,
         title: offerForm.title,
         discount: offerForm.discount,
         description: offerForm.description,
-        image: offerForm.image,
+        image: finalImageUrl,
         validUntil: offerForm.validUntil,
         actionText: offerForm.actionText,
         targetCategory: offerForm.targetCategory,
         accentColor: offerForm.accentColor,
       });
 
-      triggerAlert('success', editingOfferId ? 'Successfully updated promotional offer banner!' : 'Successfully launched new promotional offer!');
+      triggerAlert(
+        "success",
+        editingOfferId
+          ? "Successfully updated promotional offer banner!"
+          : "Successfully launched new promotional offer!",
+      );
       setIsOfferModalOpen(false);
+      setImageFile(null);
       loadDatabaseItems();
       if (onDataChange) onDataChange();
     } catch (err: any) {
-      triggerAlert('error', err.message || 'Error saving promotional offer details.');
+      setUploadProgress(false);
+      triggerAlert(
+        "error",
+        err.message || "Error saving promotional offer details.",
+      );
     }
   };
 
   const handleDeleteOffer = async (id: string, title: string) => {
-    if (window.confirm(`Are you sure you want to permanently delete offer "${title}" from the dynamic carousel?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to permanently delete offer "${title}" from the dynamic carousel?`,
+      )
+    ) {
       try {
         await apiService.deleteOfferItem(id);
-        triggerAlert('success', `Deleted promotional offer "${title}" successfully.`);
+        triggerAlert(
+          "success",
+          `Deleted promotional offer "${title}" successfully.`,
+        );
         loadDatabaseItems();
         if (onDataChange) onDataChange();
       } catch (err: any) {
-        triggerAlert('error', err.message || 'Error deleting offer.');
+        triggerAlert("error", err.message || "Error deleting offer.");
       }
     }
   };
@@ -570,11 +635,11 @@ export default function AdminPanel({
   const handleAddTutorialClick = () => {
     setEditingTutorialId(null);
     setTutorialForm({
-      title: '',
-      youtubeUrlOrId: '',
-      category: 'Biometrics',
-      duration: '8:00',
-      description: '',
+      title: "",
+      youtubeUrlOrId: "",
+      category: "General",
+      duration: "8:00",
+      description: "",
     });
     setIsTutorialModalOpen(true);
   };
@@ -582,13 +647,19 @@ export default function AdminPanel({
   const handleSaveTutorial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tutorialForm.title || !tutorialForm.youtubeUrlOrId) {
-      triggerAlert('error', 'Please enter a title and YouTube video URL or ID.');
+      triggerAlert(
+        "error",
+        "Please enter a title and YouTube video URL or ID.",
+      );
       return;
     }
 
     const youtubeId = extractYoutubeId(tutorialForm.youtubeUrlOrId);
     if (youtubeId.length !== 11) {
-      triggerAlert('error', 'Unable to parse standard YouTube video ID. Ensure link is correct.');
+      triggerAlert(
+        "error",
+        "Unable to parse standard YouTube video ID. Ensure link is correct.",
+      );
       return;
     }
 
@@ -600,27 +671,40 @@ export default function AdminPanel({
         category: tutorialForm.category,
         duration: tutorialForm.duration,
         description: tutorialForm.description,
-        publishedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        publishedAt: new Date().toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
       });
 
-      triggerAlert('success', editingTutorialId ? 'Successfully updated tutorial video details!' : 'Successfully created new tutorial video!');
+      triggerAlert(
+        "success",
+        editingTutorialId
+          ? "Successfully updated tutorial video details!"
+          : "Successfully created new tutorial video!",
+      );
       setIsTutorialModalOpen(false);
       loadDatabaseItems();
       if (onDataChange) onDataChange();
     } catch (err: any) {
-      triggerAlert('error', err.message || 'Error saving tutorial video.');
+      triggerAlert("error", err.message || "Error saving tutorial video.");
     }
   };
 
   const handleDeleteTutorial = async (id: string, title: string) => {
-    if (window.confirm(`Are you sure you want to permanently delete tutorial "${title}"?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to permanently delete tutorial "${title}"?`,
+      )
+    ) {
       try {
         await apiService.deleteTutorialVideo(id);
-        triggerAlert('success', `Deleted tutorial "${title}" successfully.`);
+        triggerAlert("success", `Deleted tutorial "${title}" successfully.`);
         loadDatabaseItems();
         if (onDataChange) onDataChange();
       } catch (err: any) {
-        triggerAlert('error', err.message || 'Error deleting tutorial.');
+        triggerAlert("error", err.message || "Error deleting tutorial.");
       }
     }
   };
@@ -642,30 +726,49 @@ export default function AdminPanel({
       author: article.author,
     });
     setIsArticleModalOpen(true);
+    setImageFile(null);
   };
 
   const handleAddArticleClick = () => {
     setEditingArticleId(null);
     setArticleForm({
-      title: '',
-      category: 'Biometrics',
-      excerpt: '',
-      content: '',
-      readTime: '5 mins read',
-      imageUrl: '',
-      author: 'Studio Specialist',
+      title: "",
+      category: "General",
+      excerpt: "",
+      content: "",
+      readTime: "Take 3 Minutes to Read",
+      imageUrl: "",
+      author: "Studio Specialist",
     });
     setIsArticleModalOpen(true);
+    setImageFile(null);
   };
 
   const handleSaveArticle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!articleForm.title || !articleForm.content || !articleForm.excerpt) {
-      triggerAlert('error', 'Please provide a title, excerpt, and content.');
+    if (
+      !articleForm.title ||
+      !articleForm.content ||
+      !articleForm.excerpt ||
+      (!articleForm.imageUrl && !imageFile)
+    ) {
+      triggerAlert(
+        "error",
+        "Please provide a title, excerpt, content, and cover image.",
+      );
       return;
     }
 
     try {
+      let finalImageUrl = articleForm.imageUrl;
+
+      if (imageFile) {
+        setUploadProgress(true);
+        triggerAlert("info", "Uploading image...");
+        finalImageUrl = await apiService.uploadImage(imageFile);
+        setUploadProgress(false);
+      }
+
       await apiService.saveLearningArticle({
         id: editingArticleId || undefined,
         title: articleForm.title,
@@ -673,29 +776,47 @@ export default function AdminPanel({
         excerpt: articleForm.excerpt,
         content: articleForm.content,
         readTime: articleForm.readTime,
-        imageUrl: articleForm.imageUrl,
+        imageUrl: finalImageUrl,
         author: articleForm.author,
-        publishedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        publishedAt: new Date().toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
       });
 
-      triggerAlert('success', editingArticleId ? 'Successfully updated learning article details!' : 'Successfully created new learning article!');
+      triggerAlert(
+        "success",
+        editingArticleId
+          ? "Successfully updated learning article details!"
+          : "Successfully created new learning article!",
+      );
       setIsArticleModalOpen(false);
+      setImageFile(null);
       loadDatabaseItems();
       if (onDataChange) onDataChange();
     } catch (err: any) {
-      triggerAlert('error', err.message || 'Error saving learning article.');
+      setUploadProgress(false);
+      triggerAlert("error", err.message || "Error saving learning article.");
     }
   };
 
   const handleDeleteArticle = async (id: string, title: string) => {
-    if (window.confirm(`Are you sure you want to permanently delete article "${title}"?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to permanently delete article "${title}"?`,
+      )
+    ) {
       try {
         await apiService.deleteLearningArticle(id);
-        triggerAlert('success', `Deleted learning article "${title}" successfully.`);
+        triggerAlert(
+          "success",
+          `Deleted learning article "${title}" successfully.`,
+        );
         loadDatabaseItems();
         if (onDataChange) onDataChange();
       } catch (err: any) {
-        triggerAlert('error', err.message || 'Error deleting article.');
+        triggerAlert("error", err.message || "Error deleting article.");
       }
     }
   };
@@ -771,9 +892,6 @@ export default function AdminPanel({
             Log Out
           </Button>
         </Box>
-
-
-
         {/* Alert updates */}
         {alertInfo && (
           <Alert
@@ -821,9 +939,26 @@ export default function AdminPanel({
               label="Manage Cinematic Videos"
               iconPosition="start"
             />
-            <Tab icon={<Sparkles size={18} />} label="Manage Studio Specialties" iconPosition="start" />
-            <Tab icon={<BadgePercent size={18} />} label="Manage Promo Offers & Ads" iconPosition="start" />
-
+            <Tab
+              icon={<Briefcase size={18} />}
+              label="Manage Studio Services"
+              iconPosition="start"
+            />
+            <Tab
+              icon={<BadgePercent size={18} />}
+              label="Manage Promo Offers & Ads"
+              iconPosition="start"
+            />
+            <Tab
+              icon={<PlaySquare size={18} />}
+              label="Manage Tutorial Videos"
+              iconPosition="start"
+            />
+            <Tab
+              icon={<BookOpen size={18} />}
+              label="Manage Learning Articles"
+              iconPosition="start"
+            />
           </Tabs>
         </Box>
 
@@ -1219,7 +1354,10 @@ export default function AdminPanel({
             >
               <Typography
                 variant="h5"
-                sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600 }}
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 600,
+                }}
               >
                 Active Studio Specialties / Services ({services.length} active)
               </Typography>
@@ -1361,7 +1499,7 @@ export default function AdminPanel({
                           >
                             {item.description}
                           </Typography>
-                          <div className="flex justify-between items-center bg-[#18181c] p-2.5 rounded border border-white/[0.04] mb-3">
+                          <div className="flex justify-between items-center bg-[#18181c] p-2.5 rounded border border-white/4 mb-3">
                             <Typography
                               variant="caption"
                               sx={{ color: "rgba(255,255,255,0.5)" }}
@@ -1392,7 +1530,10 @@ export default function AdminPanel({
                                 Included Features Preview:
                               </Typography>
                               <div className="flex flex-wrap gap-1 mt-1">
-                                {(Array.isArray(item.features) ? item.features : [])
+                                {(Array.isArray(item.features)
+                                  ? item.features
+                                  : []
+                                )
                                   .slice(0, 3)
                                   .map((f: string, i: number) => (
                                     <Chip
@@ -1400,24 +1541,27 @@ export default function AdminPanel({
                                       label={f}
                                       size="small"
                                       sx={{
-                                        backgroundColor: "rgba(255,255,255,0.04)",
+                                        backgroundColor:
+                                          "rgba(255,255,255,0.04)",
                                         color: "rgba(255,255,255,0.7)",
                                         fontSize: "0.65rem",
                                       }}
                                     />
                                   ))}
-                                {(Array.isArray(item.features) ? item.features : [])
-                                  .length > 3 && (
-                                    <Chip
-                                      label={`+${item.features.length - 3} more`}
-                                      size="small"
-                                      sx={{
-                                        backgroundColor: "rgba(255,255,255,0.04)",
-                                        color: "rgba(255,255,255,0.5)",
-                                        fontSize: "0.65rem",
-                                      }}
-                                    />
-                                  )}
+                                {(Array.isArray(item.features)
+                                  ? item.features
+                                  : []
+                                ).length > 3 && (
+                                  <Chip
+                                    label={`+${item.features.length - 3} more`}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: "rgba(255,255,255,0.04)",
+                                      color: "rgba(255,255,255,0.5)",
+                                      fontSize: "0.65rem",
+                                    }}
+                                  />
+                                )}
                               </div>
                             </Box>
                           )}
@@ -1449,10 +1593,14 @@ export default function AdminPanel({
                           </Button>
                           <IconButton
                             size="small"
-                            onClick={() => handleDeleteService(item.id, item.title)}
+                            onClick={() =>
+                              handleDeleteService(item.id, item.title)
+                            }
                             sx={{
                               color: "#f43f5e",
-                              "&:hover": { backgroundColor: "rgba(244,63,94,0.08)" },
+                              "&:hover": {
+                                backgroundColor: "rgba(244,63,94,0.08)",
+                              },
                             }}
                           >
                             <Trash2 size={16} />
@@ -1470,21 +1618,37 @@ export default function AdminPanel({
         {/* ==================================== PROMO OFFERS & ADS VIEW ==================================== */}
         {activeTab === 3 && (
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1.5 }}>
-              <Typography variant="h5" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600 }}>
-                Active Promotional Offers & Ads Carousel ({offers.length} active)
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+                flexWrap: "wrap",
+                gap: 1.5,
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 600,
+                }}
+              >
+                Active Promotional Offers & Ads Carousel ({offers.length}{" "}
+                active)
               </Typography>
               <Button
                 variant="contained"
                 onClick={handleAddOfferClick}
                 startIcon={<PlusCircle size={16} />}
                 sx={{
-                  backgroundColor: '#E50914',
+                  backgroundColor: "#E50914",
                   fontFamily: '"Space Grotesk", sans-serif',
-                  textTransform: 'none',
-                  borderRadius: '6px',
+                  textTransform: "none",
+                  borderRadius: "6px",
                   fontWeight: 600,
-                  '&:hover': { backgroundColor: '#b91c1c' },
+                  "&:hover": { backgroundColor: "#b91c1c" },
                 }}
               >
                 Add Promo Offer / Ad
@@ -1492,13 +1656,30 @@ export default function AdminPanel({
             </Box>
 
             {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                <CircularProgress sx={{ color: '#E50914' }} />
+              <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                <CircularProgress sx={{ color: "#E50914" }} />
               </Box>
             ) : offers.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 8, border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-                <Typography color="textSecondary" sx={{ mb: 2 }}>No promotional offers defined yet.</Typography>
-                <Button variant="outlined" onClick={handleAddOfferClick} sx={{ color: '#E50914', borderColor: '#E50914', textTransform: 'none' }}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 8,
+                  border: "1px dashed rgba(255,255,255,0.1)",
+                  borderRadius: "8px",
+                }}
+              >
+                <Typography color="textSecondary" sx={{ mb: 2 }}>
+                  No promotional offers defined yet.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  onClick={handleAddOfferClick}
+                  sx={{
+                    color: "#E50914",
+                    borderColor: "#E50914",
+                    textTransform: "none",
+                  }}
+                >
                   Create First Dynamic Offer
                 </Button>
               </Box>
@@ -1508,32 +1689,50 @@ export default function AdminPanel({
                   <div key={item.id}>
                     <Card
                       sx={{
-                        background: '#121214',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        transition: 'transform 0.2s',
-                        '&:hover': { transform: 'scale(1.01)' }
+                        background: "#121214",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        transition: "transform 0.2s",
+                        "&:hover": { transform: "scale(1.01)" },
                       }}
                     >
-                      <Box sx={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
+                      <Box
+                        sx={{
+                          position: "relative",
+                          aspectRatio: "16/9",
+                          overflow: "hidden",
+                        }}
+                      >
                         <img
                           src={item.image}
                           alt={item.title}
                           referrerPolicy="no-referrer"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
                         />
-                        <Box sx={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 1 }}>
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 8,
+                            left: 8,
+                            display: "flex",
+                            gap: 1,
+                          }}
+                        >
                           <Chip
                             label={item.badge}
                             size="small"
                             sx={{
-                              backgroundColor: item.accentColor || '#E50914',
-                              color: '#ffffff',
-                              fontSize: '0.65rem',
+                              backgroundColor: item.accentColor || "#E50914",
+                              color: "#ffffff",
+                              fontSize: "0.65rem",
                               fontWeight: 700,
                             }}
                           />
@@ -1541,10 +1740,10 @@ export default function AdminPanel({
                             label={item.targetCategory}
                             size="small"
                             sx={{
-                              backgroundColor: 'rgba(0,0,0,0.85)',
-                              color: '#ffffff',
-                              border: '1px solid rgba(255,255,255,0.15)',
-                              fontSize: '0.65rem',
+                              backgroundColor: "rgba(0,0,0,0.85)",
+                              color: "#ffffff",
+                              border: "1px solid rgba(255,255,255,0.15)",
+                              fontSize: "0.65rem",
                               fontWeight: 700,
                             }}
                           />
@@ -1552,19 +1751,19 @@ export default function AdminPanel({
                         {item.validUntil && (
                           <Box
                             sx={{
-                              position: 'absolute',
+                              position: "absolute",
                               bottom: 8,
                               right: 8,
-                              backgroundColor: 'rgba(0,0,0,0.8)',
-                              color: '#ffffff',
+                              backgroundColor: "rgba(0,0,0,0.8)",
+                              color: "#ffffff",
                               px: 1.5,
                               py: 0.5,
-                              borderRadius: '3px',
-                              fontSize: '0.7rem',
+                              borderRadius: "3px",
+                              fontSize: "0.7rem",
                               fontWeight: 650,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 0.5
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
                             }}
                           >
                             <Clock size={10} className="text-[#E50914]" />
@@ -1572,39 +1771,547 @@ export default function AdminPanel({
                           </Box>
                         )}
                       </Box>
-                      <CardContent sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <CardContent
+                        sx={{
+                          p: 2.5,
+                          flexGrow: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Box>
-                          <Typography variant="overline" sx={{ color: item.accentColor || '#E50914', fontWeight: 800, fontSize: '0.75rem', display: 'block', mb: 0.5 }}>
+                          <Typography
+                            variant="overline"
+                            sx={{
+                              color: item.accentColor || "#E50914",
+                              fontWeight: 800,
+                              fontSize: "0.75rem",
+                              display: "block",
+                              mb: 0.5,
+                            }}
+                          >
                             {item.discount}
                           </Typography>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1, lineHeight: 1.3, color: '#ffffff' }}>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontWeight: 700,
+                              mb: 1,
+                              lineHeight: 1.3,
+                              color: "#ffffff",
+                            }}
+                          >
                             {item.title}
                           </Typography>
-                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2, fontSize: '0.82rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: "rgba(255,255,255,0.6)",
+                              mb: 2,
+                              fontSize: "0.82rem",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
                             {item.description}
                           </Typography>
                           {item.actionText && (
-                            <div className="flex justify-between items-center bg-[#18181c] p-2.5 rounded border border-white/[0.04] mb-3">
-                              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>Action Label:</Typography>
-                              <Typography variant="subtitle2" sx={{ color: '#ffffff', fontWeight: 600, fontSize: '0.75rem' }}>{item.actionText}</Typography>
+                            <div className="flex justify-between items-center bg-[#18181c] p-2.5 rounded border border-white/4 mb-3">
+                              <Typography
+                                variant="caption"
+                                sx={{ color: "rgba(255,255,255,0.5)" }}
+                              >
+                                Action Label:
+                              </Typography>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{
+                                  color: "#ffffff",
+                                  fontWeight: 600,
+                                  fontSize: "0.75rem",
+                                }}
+                              >
+                                {item.actionText}
+                              </Typography>
                             </div>
                           )}
                         </Box>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 1.5, borderTop: '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 2,
+                            pt: 1.5,
+                            borderTop: "1px solid rgba(255,255,255,0.05)",
+                            alignItems: "center",
+                          }}
+                        >
                           <Button
                             variant="text"
                             size="small"
                             onClick={() => handleEditOffer(item)}
                             startIcon={<Edit size={14} />}
-                            sx={{ color: '#38bdf8', textTransform: 'none', fontFamily: '"Space Grotesk"', fontSize: '0.75rem' }}
+                            sx={{
+                              color: "#38bdf8",
+                              textTransform: "none",
+                              fontFamily: '"Space Grotesk"',
+                              fontSize: "0.75rem",
+                            }}
                           >
                             Edit Offer
                           </Button>
                           <IconButton
                             size="small"
-                            onClick={() => handleDeleteOffer(item.id, item.title)}
-                            sx={{ color: '#f43f5e', '&:hover': { backgroundColor: 'rgba(244,63,94,0.08)' } }}
+                            onClick={() =>
+                              handleDeleteOffer(item.id, item.title)
+                            }
+                            sx={{
+                              color: "#f43f5e",
+                              "&:hover": {
+                                backgroundColor: "rgba(244,63,94,0.08)",
+                              },
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </IconButton>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Box>
+        )}
+
+        {/* ==================================== TUTORIAL VIDEOS VIEW ==================================== */}
+        {activeTab === 4 && (
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+                flexWrap: "wrap",
+                gap: 1.5,
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 600,
+                }}
+              >
+                Learn From Us: Tutorial Videos ({tutorialVideos.length} videos)
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={handleAddTutorialClick}
+                startIcon={<PlusCircle size={16} />}
+                sx={{
+                  backgroundColor: "#E50914",
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: "none",
+                  borderRadius: "6px",
+                  fontWeight: 600,
+                  "&:hover": { backgroundColor: "#b91c1c" },
+                }}
+              >
+                Add Tutorial Video
+              </Button>
+            </Box>
+
+            {loading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                <CircularProgress sx={{ color: "#E50914" }} />
+              </Box>
+            ) : tutorialVideos.length === 0 ? (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 8,
+                  border: "1px dashed rgba(255,255,255,0.1)",
+                  borderRadius: "8px",
+                }}
+              >
+                <Typography color="textSecondary" sx={{ mb: 2 }}>
+                  No tutorial videos tracked yet.
+                </Typography>
+              </Box>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {tutorialVideos.map((vid) => (
+                  <div key={vid.id}>
+                    <Card
+                      sx={{
+                        background: "#121214",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        transition: "transform 0.2s",
+                        "&:hover": { transform: "scale(1.01)" },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: "relative",
+                          aspectRatio: "16/9",
+                          overflow: "hidden",
+                          backgroundColor: "#000000",
+                        }}
+                      >
+                        <img
+                          src={`https://img.youtube.com/vi/${vid.youtubeId}/mqdefault.jpg`}
+                          alt={vid.title}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <Box sx={{ position: "absolute", top: 8, left: 8 }}>
+                          <Chip
+                            label={vid.category}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(0,0,0,0.85)",
+                              color: "#ffffff",
+                              border: "1px solid rgba(255,255,255,0.15)",
+                              fontSize: "0.65rem",
+                              fontWeight: 700,
+                            }}
+                          />
+                        </Box>
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            bottom: 8,
+                            right: 8,
+                            backgroundColor: "rgba(0,0,0,0.8)",
+                            color: "#ffffff",
+                            px: 1,
+                            borderRadius: "3px",
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {vid.duration} mins
+                        </Box>
+                      </Box>
+                      <CardContent
+                        sx={{
+                          p: 2,
+                          flexGrow: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Box>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ fontWeight: 650, mb: 1, lineHeight: 1.3 }}
+                          >
+                            {vid.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: "rgba(255,255,255,0.6)",
+                              mb: 2,
+                              fontSize: "0.82rem",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {vid.description}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "rgba(255,255,255,0.4)",
+                              display: "block",
+                            }}
+                          >
+                            Published: {vid.publishedAt}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 3,
+                            pt: 1,
+                            borderTop: "1px solid rgba(255,255,255,0.05)",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => handleEditTutorial(vid)}
+                            startIcon={<Edit size={14} />}
+                            sx={{
+                              color: "#38bdf8",
+                              textTransform: "none",
+                              fontFamily: '"Space Grotesk"',
+                              fontSize: "0.75rem",
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              href={`https://www.youtube.com/watch?v=${vid.youtubeId}`}
+                              target="_blank"
+                              sx={{
+                                color: "rgba(255,255,255,0.5)",
+                                "&:hover": { color: "#ff3333" },
+                              }}
+                            >
+                              <ExternalLink size={16} />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleDeleteTutorial(vid.id, vid.title)
+                              }
+                              sx={{
+                                color: "#f43f5e",
+                                "&:hover": {
+                                  backgroundColor: "rgba(244,63,94,0.08)",
+                                },
+                              }}
+                            >
+                              <Trash2 size={16} />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Box>
+        )}
+
+        {/* ==================================== LEARNING ARTICLES VIEW ==================================== */}
+        {activeTab === 5 && (
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+                flexWrap: "wrap",
+                gap: 1.5,
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 600,
+                }}
+              >
+                Learn From Us: Learning Articles ({learningArticles.length}{" "}
+                articles)
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={handleAddArticleClick}
+                startIcon={<PlusCircle size={16} />}
+                sx={{
+                  backgroundColor: "#E50914",
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textTransform: "none",
+                  borderRadius: "6px",
+                  fontWeight: 600,
+                  "&:hover": { backgroundColor: "#b91c1c" },
+                }}
+              >
+                Add Article
+              </Button>
+            </Box>
+
+            {loading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                <CircularProgress sx={{ color: "#E50914" }} />
+              </Box>
+            ) : learningArticles.length === 0 ? (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 8,
+                  border: "1px dashed rgba(255,255,255,0.1)",
+                  borderRadius: "8px",
+                }}
+              >
+                <Typography color="textSecondary" sx={{ mb: 2 }}>
+                  No learning articles defined yet.
+                </Typography>
+              </Box>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningArticles.map((item) => (
+                  <div key={item.id}>
+                    <Card
+                      sx={{
+                        background: "#121214",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        transition: "transform 0.2s",
+                        "&:hover": { transform: "scale(1.01)" },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: "relative",
+                          aspectRatio: "16/9",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <Box sx={{ position: "absolute", top: 8, left: 8 }}>
+                          <Chip
+                            label={item.category}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(0,0,0,0.85)",
+                              color: "#ffffff",
+                              border: "1px solid rgba(255,255,255,0.15)",
+                              fontSize: "0.65rem",
+                              fontWeight: 700,
+                            }}
+                          />
+                        </Box>
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            bottom: 8,
+                            right: 8,
+                            backgroundColor: "rgba(0,0,0,0.8)",
+                            color: "#ffffff",
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: "3px",
+                            fontSize: "0.7rem",
+                            fontWeight: 650,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <Clock size={10} className="text-[#E50914]" />{" "}
+                          {item.readTime}
+                        </Box>
+                      </Box>
+                      <CardContent
+                        sx={{
+                          p: 2.5,
+                          flexGrow: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Box>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontWeight: 700,
+                              mb: 1,
+                              lineHeight: 1.3,
+                              color: "#ffffff",
+                            }}
+                          >
+                            {item.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: "rgba(255,255,255,0.6)",
+                              mb: 2,
+                              fontSize: "0.82rem",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {item.excerpt}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "rgba(255,255,255,0.4)",
+                              display: "block",
+                            }}
+                          >
+                            By {item.author} | {item.publishedAt}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 2,
+                            pt: 1.5,
+                            borderTop: "1px solid rgba(255,255,255,0.05)",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => handleEditArticle(item)}
+                            startIcon={<Edit size={14} />}
+                            sx={{
+                              color: "#38bdf8",
+                              textTransform: "none",
+                              fontFamily: '"Space Grotesk"',
+                              fontSize: "0.75rem",
+                            }}
+                          >
+                            Edit Article
+                          </Button>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              handleDeleteArticle(item.id, item.title)
+                            }
+                            sx={{
+                              color: "#f43f5e",
+                              "&:hover": {
+                                backgroundColor: "rgba(244,63,94,0.08)",
+                              },
+                            }}
                           >
                             <Trash2 size={16} />
                           </IconButton>
@@ -1767,6 +2474,18 @@ export default function AdminPanel({
                     onChange={handleImageFileChange}
                   />
                 </Button>
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{
+                    display: "block",
+                    textAlign: "center",
+                    mt: -1.5,
+                    mb: 2,
+                  }}
+                >
+                  Max file size: 5MB
+                </Typography>
 
                 <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.08)" }}>
                   OR
@@ -2180,7 +2899,9 @@ export default function AdminPanel({
                 margin="normal"
                 required
                 value={serviceForm.title}
-                onChange={(e) => handleServiceFormChange("title", e.target.value)}
+                onChange={(e) =>
+                  handleServiceFormChange("title", e.target.value)
+                }
                 slotProps={{
                   inputLabel: {
                     style: {
@@ -2207,7 +2928,9 @@ export default function AdminPanel({
                   margin="none"
                   required
                   value={serviceForm.category}
-                  onChange={(e) => handleServiceFormChange("category", e.target.value)}
+                  onChange={(e) =>
+                    handleServiceFormChange("category", e.target.value)
+                  }
                   slotProps={{
                     inputLabel: {
                       style: {
@@ -2219,7 +2942,9 @@ export default function AdminPanel({
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
                       "&:hover fieldset": { borderColor: "#E50914" },
                       "&.Mui-focused fieldset": { borderColor: "#E50914" },
                     },
@@ -2251,7 +2976,9 @@ export default function AdminPanel({
                   margin="none"
                   required
                   value={serviceForm.rating}
-                  onChange={(e) => handleServiceFormChange("rating", e.target.value)}
+                  onChange={(e) =>
+                    handleServiceFormChange("rating", e.target.value)
+                  }
                   slotProps={{
                     inputLabel: {
                       style: {
@@ -2264,7 +2991,9 @@ export default function AdminPanel({
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
                       "&:hover fieldset": { borderColor: "#E50914" },
                       "&.Mui-focused fieldset": { borderColor: "#E50914" },
                     },
@@ -2280,7 +3009,9 @@ export default function AdminPanel({
                   margin="none"
                   required
                   value={serviceForm.basePrice}
-                  onChange={(e) => handleServiceFormChange("basePrice", e.target.value)}
+                  onChange={(e) =>
+                    handleServiceFormChange("basePrice", e.target.value)
+                  }
                   slotProps={{
                     inputLabel: {
                       style: {
@@ -2292,7 +3023,9 @@ export default function AdminPanel({
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
                       "&:hover fieldset": { borderColor: "#E50914" },
                       "&.Mui-focused fieldset": { borderColor: "#E50914" },
                     },
@@ -2306,7 +3039,9 @@ export default function AdminPanel({
                   margin="none"
                   required
                   value={serviceForm.duration}
-                  onChange={(e) => handleServiceFormChange("duration", e.target.value)}
+                  onChange={(e) =>
+                    handleServiceFormChange("duration", e.target.value)
+                  }
                   slotProps={{
                     inputLabel: {
                       style: {
@@ -2318,7 +3053,9 @@ export default function AdminPanel({
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
                       "&:hover fieldset": { borderColor: "#E50914" },
                       "&.Mui-focused fieldset": { borderColor: "#E50914" },
                     },
@@ -2379,6 +3116,18 @@ export default function AdminPanel({
                     onChange={handleImageFileChange}
                   />
                 </Button>
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{
+                    display: "block",
+                    textAlign: "center",
+                    mt: -1.5,
+                    mb: 2,
+                  }}
+                >
+                  Max file size: 5MB
+                </Typography>
 
                 <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.08)" }}>
                   OR
@@ -2389,7 +3138,9 @@ export default function AdminPanel({
                   label="Alternative Web Image URL (Unsplash etc.)"
                   placeholder="https://images.unsplash.com/..."
                   value={serviceForm.imageUrl}
-                  onChange={(e) => handleServiceFormChange("imageUrl", e.target.value)}
+                  onChange={(e) =>
+                    handleServiceFormChange("imageUrl", e.target.value)
+                  }
                   slotProps={{
                     inputLabel: {
                       style: {
@@ -2412,7 +3163,9 @@ export default function AdminPanel({
                   }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
                       "&:hover fieldset": { borderColor: "#E50914" },
                       "&.Mui-focused fieldset": { borderColor: "#E50914" },
                     },
@@ -2464,7 +3217,9 @@ export default function AdminPanel({
                 margin="normal"
                 required
                 value={serviceForm.description}
-                onChange={(e) => handleServiceFormChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleServiceFormChange("description", e.target.value)
+                }
                 slotProps={{
                   inputLabel: {
                     style: {
@@ -2512,7 +3267,9 @@ export default function AdminPanel({
                 }}
               />
             </DialogContent>
-            <DialogActions sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+            <DialogActions
+              sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.08)" }}
+            >
               <Button
                 onClick={() => setIsServiceModalOpen(false)}
                 sx={{ color: "#a1a1aa" }}
@@ -2540,18 +3297,26 @@ export default function AdminPanel({
           fullWidth
           maxWidth="sm"
           sx={{
-            '& .MuiPaper-root': {
-              backgroundColor: '#18181b',
-              backgroundImage: 'none',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '12px',
-              color: '#ffffff',
+            "& .MuiPaper-root": {
+              backgroundColor: "#18181b",
+              backgroundImage: "none",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "12px",
+              color: "#ffffff",
             },
           }}
         >
           <Box component="form" onSubmit={handleSaveOffer}>
-            <DialogTitle sx={{ borderBottom: '1px solid rgba(255,255,255,0.08)', fontFamily: '"Space Grotesk"', fontWeight: 700 }}>
-              {editingOfferId ? 'Edit Active Promotion Offer' : 'Launch New Promotional Offer'}
+            <DialogTitle
+              sx={{
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
+                fontFamily: '"Space Grotesk"',
+                fontWeight: 700,
+              }}
+            >
+              {editingOfferId
+                ? "Edit Active Promotion Offer"
+                : "Launch New Promotional Offer"}
             </DialogTitle>
             <DialogContent sx={{ p: 4 }}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
@@ -2561,17 +3326,26 @@ export default function AdminPanel({
                   placeholder="e.g. LIMITED SEASON OFFER"
                   required
                   value={offerForm.badge}
-                  onChange={(e) => handleOfferFormChange('badge', e.target.value)}
+                  onChange={(e) =>
+                    handleOfferFormChange("badge", e.target.value)
+                  }
                   slotProps={{
-                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                    input: { style: { color: '#ffffff' } }
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                      '&:hover fieldset': { borderColor: '#E50914' },
-                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                    }
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
                   }}
                 />
 
@@ -2581,17 +3355,26 @@ export default function AdminPanel({
                   placeholder="e.g. 15% FLAT DISCOUNT"
                   required
                   value={offerForm.discount}
-                  onChange={(e) => handleOfferFormChange('discount', e.target.value)}
+                  onChange={(e) =>
+                    handleOfferFormChange("discount", e.target.value)
+                  }
                   slotProps={{
-                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                    input: { style: { color: '#ffffff' } }
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                      '&:hover fieldset': { borderColor: '#E50914' },
-                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                    }
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
                   }}
                 />
               </div>
@@ -2603,40 +3386,169 @@ export default function AdminPanel({
                 margin="normal"
                 required
                 value={offerForm.title}
-                onChange={(e) => handleOfferFormChange('title', e.target.value)}
+                onChange={(e) => handleOfferFormChange("title", e.target.value)}
                 slotProps={{
-                  inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                  input: { style: { color: '#ffffff' } }
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
                 }}
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                    '&:hover fieldset': { borderColor: '#E50914' },
-                    '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                  }
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
                 }}
               />
 
-              <TextField
-                fullWidth
-                label="Promo Banner Image URL"
-                placeholder="https://images.unsplash.com/..."
-                margin="normal"
-                required
-                value={offerForm.image}
-                onChange={(e) => handleOfferFormChange('image', e.target.value)}
-                slotProps={{
-                  inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                  input: { style: { color: '#ffffff' } }
-                }}
+              <Box
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                    '&:hover fieldset': { borderColor: '#E50914' },
-                    '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                  }
+                  mt: 3,
+                  mb: 1,
+                  border: "1px dashed rgba(229, 9, 20, 0.25)",
+                  p: 2.5,
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(229,9,20,0.02)",
                 }}
-              />
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1.5,
+                    fontFamily: '"Space Grotesk"',
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Upload size={16} className="text-[#E50914]" /> Select Image
+                  Source
+                </Typography>
+
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<Upload size={14} />}
+                  disabled={uploadProgress}
+                  sx={{
+                    width: "100%",
+                    mb: 2.5,
+                    color: "#ffffff",
+                    borderColor: "rgba(255,255,255,0.15)",
+                    textTransform: "none",
+                    fontFamily: '"Space Grotesk"',
+                    "&:hover": {
+                      borderColor: "#E50914",
+                      backgroundColor: "rgba(229,9,20,0.05)",
+                    },
+                  }}
+                >
+                  {uploadProgress
+                    ? "Reading raw file data..."
+                    : "Upload Image / Drop local photo"}
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleImageFileChange}
+                  />
+                </Button>
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{
+                    display: "block",
+                    textAlign: "center",
+                    mt: -1.5,
+                    mb: 2,
+                  }}
+                >
+                  Max file size: 5MB
+                </Typography>
+
+                <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.08)" }}>
+                  OR
+                </Divider>
+
+                <TextField
+                  fullWidth
+                  label="Alternative Web Image URL (Unsplash etc.)"
+                  placeholder="https://images.unsplash.com/..."
+                  value={offerForm.image}
+                  onChange={(e) =>
+                    handleOfferFormChange("image", e.target.value)
+                  }
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: {
+                      style: { color: "#ffffff" },
+                      startAdornment: (
+                        <IconButton
+                          size="small"
+                          edge="start"
+                          sx={{ color: "rgba(255,255,255,0.4)" }}
+                        >
+                          <LinkIcon size={14} />
+                        </IconButton>
+                      ),
+                    },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+              </Box>
+
+              {offerForm.image && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 1.5,
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: "6px",
+                    textAlign: "center",
+                    backgroundColor: "#121214",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "rgba(255,255,255,0.4)",
+                      mb: 1,
+                      display: "block",
+                    }}
+                  >
+                    Image Preview
+                  </Typography>
+                  <img
+                    src={offerForm.image}
+                    alt="Preview"
+                    style={{
+                      maxHeight: "140px",
+                      maxWidth: "100%",
+                      margin: "0 auto",
+                      borderRadius: "4px",
+                      objectFit: "contain",
+                    }}
+                  />
+                </Box>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
                 <TextField
@@ -2645,17 +3557,26 @@ export default function AdminPanel({
                   placeholder="e.g. Ends June 30, 2026"
                   required
                   value={offerForm.validUntil}
-                  onChange={(e) => handleOfferFormChange('validUntil', e.target.value)}
+                  onChange={(e) =>
+                    handleOfferFormChange("validUntil", e.target.value)
+                  }
                   slotProps={{
-                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                    input: { style: { color: '#ffffff' } }
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                      '&:hover fieldset': { borderColor: '#E50914' },
-                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                    }
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
                   }}
                 />
 
@@ -2665,17 +3586,26 @@ export default function AdminPanel({
                   placeholder="e.g. Claim 15% Discount"
                   required
                   value={offerForm.actionText}
-                  onChange={(e) => handleOfferFormChange('actionText', e.target.value)}
+                  onChange={(e) =>
+                    handleOfferFormChange("actionText", e.target.value)
+                  }
                   slotProps={{
-                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                    input: { style: { color: '#ffffff' } }
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                      '&:hover fieldset': { borderColor: '#E50914' },
-                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                    }
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
                   }}
                 />
               </div>
@@ -2686,22 +3616,35 @@ export default function AdminPanel({
                   fullWidth
                   label="Target Portfolio Category"
                   value={offerForm.targetCategory}
-                  onChange={(e) => handleOfferFormChange('targetCategory', e.target.value)}
+                  onChange={(e) =>
+                    handleOfferFormChange("targetCategory", e.target.value)
+                  }
                   slotProps={{
-                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                    input: { style: { color: '#ffffff' } }
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                      '&:hover fieldset': { borderColor: '#E50914' },
-                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                    }
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
                   }}
                 >
-                  {['Wedding', 'Visa', 'Portrait', 'Event', 'Commercial'].map((cat) => (
-                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-                  ))}
+                  {["Wedding", "Visa", "Portrait", "Event", "Commercial"].map(
+                    (cat) => (
+                      <MenuItem key={cat} value={cat}>
+                        {cat}
+                      </MenuItem>
+                    ),
+                  )}
                 </TextField>
 
                 <TextField
@@ -2709,17 +3652,26 @@ export default function AdminPanel({
                   fullWidth
                   label="Brand Theme Accent Color"
                   value={offerForm.accentColor}
-                  onChange={(e) => handleOfferFormChange('accentColor', e.target.value)}
+                  onChange={(e) =>
+                    handleOfferFormChange("accentColor", e.target.value)
+                  }
                   slotProps={{
-                    inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                    input: { style: { color: '#ffffff' } }
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                      '&:hover fieldset': { borderColor: '#E50914' },
-                      '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                    }
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
                   }}
                 >
                   <MenuItem value="#E50914">Crimson Red (#E50914)</MenuItem>
@@ -2739,28 +3691,641 @@ export default function AdminPanel({
                 margin="normal"
                 required
                 value={offerForm.description}
-                onChange={(e) => handleOfferFormChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleOfferFormChange("description", e.target.value)
+                }
                 slotProps={{
-                  inputLabel: { style: { color: 'rgba(255, 255, 255, 0.6)', fontFamily: '"Space Grotesk"' } },
-                  input: { style: { color: '#ffffff' } }
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
                 }}
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                    '&:hover fieldset': { borderColor: '#E50914' },
-                    '&.Mui-focused fieldset': { borderColor: '#E50914' },
-                  }
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
                 }}
               />
             </DialogContent>
-            <DialogActions sx={{ p: 3, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              <Button onClick={() => setIsOfferModalOpen(false)} sx={{ color: '#a1a1aa' }}>Cancel</Button>
+            <DialogActions
+              sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <Button
+                onClick={() => setIsOfferModalOpen(false)}
+                sx={{ color: "#a1a1aa" }}
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
                 variant="contained"
-                sx={{ backgroundColor: '#E50914', '&:hover': { backgroundColor: '#b91c1c' } }}
+                sx={{
+                  backgroundColor: "#E50914",
+                  "&:hover": { backgroundColor: "#b91c1c" },
+                }}
               >
-                {editingOfferId ? 'Update Promo Offer' : 'Launch Promo Offer'}
+                {editingOfferId ? "Update Promo Offer" : "Launch Promo Offer"}
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
+        {/* ==================================== MODAL DIALOG: ADD/EDIT TUTORIAL VIDEO ==================================== */}
+        <Dialog
+          open={isTutorialModalOpen}
+          onClose={() => setIsTutorialModalOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          sx={{
+            "& .MuiPaper-root": {
+              backgroundColor: "#18181b",
+              backgroundImage: "none",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "12px",
+              color: "#ffffff",
+            },
+          }}
+        >
+          <Box component="form" onSubmit={handleSaveTutorial}>
+            <DialogTitle
+              sx={{
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
+                fontFamily: '"Space Grotesk"',
+                fontWeight: 700,
+              }}
+            >
+              {editingTutorialId
+                ? "Edit Tutorial Video"
+                : "Add New Tutorial Video"}
+            </DialogTitle>
+            <DialogContent sx={{ p: 4 }}>
+              <TextField
+                fullWidth
+                label="Tutorial Title"
+                margin="normal"
+                required
+                value={tutorialForm.title}
+                onChange={(e) =>
+                  handleTutorialFormChange("title", e.target.value)
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                label="YouTube URL or 11-Digit Video ID"
+                placeholder="https://www.youtube.com/watch?v=..."
+                margin="normal"
+                required
+                value={tutorialForm.youtubeUrlOrId}
+                onChange={(e) =>
+                  handleTutorialFormChange("youtubeUrlOrId", e.target.value)
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: {
+                    style: { color: "#ffffff" },
+                    startAdornment: (
+                      <IconButton
+                        size="small"
+                        edge="start"
+                        sx={{ color: "rgba(255,255,255,0.4)" }}
+                      >
+                        <VideoIcon size={14} />
+                      </IconButton>
+                    ),
+                  },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <TextField
+                  select
+                  fullWidth
+                  label="Category"
+                  margin="none"
+                  required
+                  value={tutorialForm.category}
+                  onChange={(e) =>
+                    handleTutorialFormChange("category", e.target.value)
+                  }
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                >
+                  {[
+                    "Biometrics",
+                    "Posing",
+                    "Framing",
+                    "Lighting",
+                    "Editing",
+                    "General",
+                  ].map((c) => (
+                    <MenuItem key={c} value={c}>
+                      {c}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  fullWidth
+                  label="Duration (e.g. 5:10)"
+                  placeholder="8:00"
+                  margin="none"
+                  value={tutorialForm.duration}
+                  onChange={(e) =>
+                    handleTutorialFormChange("duration", e.target.value)
+                  }
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+              </div>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Tutorial Description"
+                placeholder="Describe what viewers will learn..."
+                margin="normal"
+                value={tutorialForm.description}
+                onChange={(e) =>
+                  handleTutorialFormChange("description", e.target.value)
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+            </DialogContent>
+            <DialogActions
+              sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <Button
+                onClick={() => setIsTutorialModalOpen(false)}
+                sx={{ color: "#a1a1aa" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#E50914",
+                  "&:hover": { backgroundColor: "#b91c1c" },
+                }}
+              >
+                {editingTutorialId ? "Update Tutorial" : "Save Tutorial"}
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
+
+        {/* ==================================== MODAL DIALOG: ADD/EDIT LEARNING ARTICLE ==================================== */}
+        <Dialog
+          open={isArticleModalOpen}
+          onClose={() => setIsArticleModalOpen(false)}
+          fullWidth
+          maxWidth="md"
+          sx={{
+            "& .MuiPaper-root": {
+              backgroundColor: "#18181b",
+              backgroundImage: "none",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "12px",
+              color: "#ffffff",
+            },
+          }}
+        >
+          <Box component="form" onSubmit={handleSaveArticle}>
+            <DialogTitle
+              sx={{
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
+                fontFamily: '"Space Grotesk"',
+                fontWeight: 700,
+              }}
+            >
+              {editingArticleId
+                ? "Edit Learning Article"
+                : "Add New Learning Article"}
+            </DialogTitle>
+            <DialogContent sx={{ p: 4 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <TextField
+                  fullWidth
+                  label="Article Title"
+                  required
+                  value={articleForm.title}
+                  onChange={(e) =>
+                    handleArticleFormChange("title", e.target.value)
+                  }
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+                <TextField
+                  select
+                  fullWidth
+                  label="Category"
+                  required
+                  value={articleForm.category}
+                  onChange={(e) =>
+                    handleArticleFormChange("category", e.target.value)
+                  }
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                >
+                  {[
+                    "Biometrics",
+                    "Posing",
+                    "Framing",
+                    "Lighting",
+                    "Editing",
+                    "General",
+                  ].map((c) => (
+                    <MenuItem key={c} value={c}>
+                      {c}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <TextField
+                  fullWidth
+                  label="Read Time (e.g. 5 mins read)"
+                  value={articleForm.readTime}
+                  onChange={(e) =>
+                    handleArticleFormChange("readTime", e.target.value)
+                  }
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+                <TextField
+                  fullWidth
+                  label="Author Name"
+                  value={articleForm.author}
+                  onChange={(e) =>
+                    handleArticleFormChange("author", e.target.value)
+                  }
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+              </div>
+
+              <Box
+                sx={{
+                  mt: 3,
+                  mb: 1,
+                  border: "1px dashed rgba(229, 9, 20, 0.25)",
+                  p: 2.5,
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(229,9,20,0.02)",
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1.5,
+                    fontFamily: '"Space Grotesk"',
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Upload size={16} className="text-[#E50914]" /> Select Article
+                  Cover Image
+                </Typography>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<Upload size={14} />}
+                  disabled={uploadProgress}
+                  sx={{
+                    width: "100%",
+                    mb: 2.5,
+                    color: "#ffffff",
+                    borderColor: "rgba(255,255,255,0.15)",
+                    textTransform: "none",
+                    fontFamily: '"Space Grotesk"',
+                    "&:hover": {
+                      borderColor: "#E50914",
+                      backgroundColor: "rgba(229,9,20,0.05)",
+                    },
+                  }}
+                >
+                  {uploadProgress
+                    ? "Reading raw file data..."
+                    : "Upload Image / Drop local photo"}
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleImageFileChange}
+                  />
+                </Button>
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{
+                    display: "block",
+                    textAlign: "center",
+                    mt: -1.5,
+                    mb: 2,
+                  }}
+                >
+                  Max file size: 5MB
+                </Typography>
+                <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.08)" }}>
+                  OR
+                </Divider>
+                <TextField
+                  fullWidth
+                  label="Alternative Web Image URL"
+                  placeholder="https://images.unsplash.com/..."
+                  value={articleForm.imageUrl}
+                  onChange={(e) =>
+                    handleArticleFormChange("imageUrl", e.target.value)
+                  }
+                  slotProps={{
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    input: {
+                      style: { color: "#ffffff" },
+                      startAdornment: (
+                        <IconButton
+                          size="small"
+                          edge="start"
+                          sx={{ color: "rgba(255,255,255,0.4)" }}
+                        >
+                          <LinkIcon size={14} />
+                        </IconButton>
+                      ),
+                    },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
+                />
+              </Box>
+
+              {articleForm.imageUrl && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 1.5,
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: "6px",
+                    textAlign: "center",
+                    backgroundColor: "#121214",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "rgba(255,255,255,0.4)",
+                      mb: 1,
+                      display: "block",
+                    }}
+                  >
+                    Image Preview
+                  </Typography>
+                  <img
+                    src={articleForm.imageUrl}
+                    alt="Preview"
+                    style={{
+                      maxHeight: "140px",
+                      maxWidth: "100%",
+                      margin: "0 auto",
+                      borderRadius: "4px",
+                      objectFit: "contain",
+                    }}
+                  />
+                </Box>
+              )}
+
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                label="Short Excerpt"
+                placeholder="A brief 1-2 sentence summary..."
+                margin="normal"
+                required
+                value={articleForm.excerpt}
+                onChange={(e) =>
+                  handleArticleFormChange("excerpt", e.target.value)
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+
+              <TextField
+                fullWidth
+                multiline
+                rows={8}
+                label="Full Content (Supports Markdown)"
+                placeholder="Write your full article content here..."
+                margin="normal"
+                required
+                value={articleForm.content}
+                onChange={(e) =>
+                  handleArticleFormChange("content", e.target.value)
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: { style: { color: "#ffffff" } },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+            </DialogContent>
+            <DialogActions
+              sx={{ p: 3, borderTop: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <Button
+                onClick={() => setIsArticleModalOpen(false)}
+                sx={{ color: "#a1a1aa" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#E50914",
+                  "&:hover": { backgroundColor: "#b91c1c" },
+                }}
+              >
+                {editingArticleId ? "Update Article" : "Publish Article"}
               </Button>
             </DialogActions>
           </Box>

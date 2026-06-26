@@ -201,10 +201,8 @@ export const apiService = {
         // Return data even if empty to prevent showing hardcoded fallbacks
         if (data) return data as PortfolioItem[];
       } catch (err) {
-        console.warn(
-          "Supabase portfolio fetch error, falling back to localStorage:",
-          err,
-        );
+        console.warn("Supabase portfolio fetch error:", err);
+        return [];
       }
     }
 
@@ -295,10 +293,8 @@ export const apiService = {
         if (error) throw error;
         if (data) return data as VideoItem[];
       } catch (err) {
-        console.warn(
-          "Supabase video fetch error, falling back to localStorage:",
-          err,
-        );
+        console.warn("Supabase video fetch error:", err);
+        return [];
       }
     }
 
@@ -392,7 +388,8 @@ export const apiService = {
         // Return data even if empty to prevent showing hardcoded fallbacks
         if (data) return data as StudioService[];
       } catch (err) {
-        console.warn('Supabase services fetch error, falling back to localStorage:', err);
+        console.warn('Supabase services fetch error:', err);
+        return [];
       }
     }
 
@@ -473,9 +470,11 @@ export const apiService = {
           .select('*')
           .order('id', { ascending: true });
         if (error) throw error;
-        if (data && data.length > 0) return data as OfferAd[];
+        // Return data even if empty to prevent showing hardcoded fallbacks
+        if (data) return data as OfferAd[];
       } catch (err) {
-        console.warn('Supabase offers fetch error, falling back to localStorage:', err);
+        console.warn('Supabase offers fetch error:', err);
+        return [];
       }
     }
 
@@ -558,9 +557,11 @@ export const apiService = {
           .select('*')
           .order('id', { ascending: false });
         if (error) throw error;
-        if (data && data.length > 0) return data as TutorialVideo[];
+        // Return data even if empty to prevent showing hardcoded fallbacks
+        if (data) return data as TutorialVideo[];
       } catch (err) {
-        console.warn('Supabase tutorials fetch error, falling back to localStorage:', err);
+        console.warn('Supabase tutorials fetch error:', err);
+        return [];
       }
     }
 
@@ -640,9 +641,11 @@ export const apiService = {
           .select('*')
           .order('id', { ascending: false });
         if (error) throw error;
-        if (data && data.length > 0) return data as LearningArticle[];
+        // Return data even if empty to prevent showing hardcoded fallbacks
+        if (data) return data as LearningArticle[];
       } catch (err) {
-        console.warn('Supabase articles fetch error, falling back to localStorage:', err);
+        console.warn('Supabase articles fetch error:', err);
+        return [];
       }
     }
 

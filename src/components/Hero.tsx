@@ -86,7 +86,7 @@ export default function Hero({ onNavigate }: HeroProps) {
       }}
       id="hero-root"
     >
-      
+
       {/* Slogan */}
       <Typography
         variant="h2"
@@ -221,180 +221,99 @@ export default function Hero({ onNavigate }: HeroProps) {
 
               </Box>
 
-              {/* Social Connect Row */}
-              <div className="flex flex-wrap gap-4 sm:gap-6 border-t border-slate-200 dark:border-white/10 pt-8 text-left">
-                <Box
-                  component="a"
-                  href="https://wa.me/9779801000000"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textDecoration: "none" }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
-                    <MessageCircle
-                      size={24}
-                      className="text-[#25D366] shrink-0"
-                    />
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 600,
-                          color: "text.primary",
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                        }}
-                      >
-                        WhatsApp
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.secondary", display: { xs: "none", sm: "block" }, textDecoration: "none" }}
-                      >
-                        Chat with us
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
+              {/* Social Connect Infinite Marquee */}
+              <Box sx={{ mt: 6, pt: 4, borderTop: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', position: 'relative' }}>
+                <Typography variant="overline" sx={{ display: 'block', mb: 3, color: 'text.secondary', fontWeight: 600, letterSpacing: '0.1em' }}>
+                  CONNECT WITH OUR COMMUNITY
+                </Typography>
 
                 <Box
-                  component="a"
-                  href="https://instagram.com/studiomeroclick"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textDecoration: "none" }}
+                  sx={{
+                    display: 'flex',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    width: '100%',
+                    maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+                    WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+                    '&:hover .marquee-content': {
+                      animationPlayState: 'paused'
+                    }
+                  }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
-                    <Instagram size={24} className="text-[#E1306C] shrink-0" />
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
+                  <Box
+                    className="marquee-content"
+                    sx={{
+                      display: 'flex',
+                      gap: { xs: 2, md: 3 },
+                      animation: 'scroll-marquee 25s linear infinite',
+                      '@keyframes scroll-marquee': {
+                        '0%': { transform: 'translateX(0)' },
+                        '100%': { transform: 'translateX(-50%)' }
+                      },
+                      width: 'max-content',
+                      py: 1,
+                      pl: 2
+                    }}
+                  >
+                    {(() => {
+                      const items = [
+                        { name: 'WhatsApp', desc: 'Chat with us', icon: <MessageCircle size={22} className="text-[#25D366] shrink-0" />, url: 'https://wa.me/+9779823367428', color: '#25D366' },
+                        { name: 'Instagram', desc: 'Follow our work', icon: <Instagram size={22} className="text-[#E1306C] shrink-0" />, url: 'https://instagram.com/studiomeroclick', color: '#E1306C' },
+                        { name: 'Facebook', desc: 'Join our community', icon: <Facebook size={22} className="text-[#1877F2] shrink-0" />, url: 'https://facebook.com/studiomeroclick', color: '#1877F2' },
+                        {
+                          name: 'TikTok', desc: 'Follow our trends', icon: (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black dark:text-white shrink-0">
+                              <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5v3a3 3 0 0 1-3-3" />
+                            </svg>
+                          ), url: 'https://tiktok.com/@studiomeroclick', color: isDark ? '#ffffff' : '#000000'
+                        },
+                        { name: 'YouTube', desc: 'Watch our videos', icon: <Youtube size={22} className="text-[#FF0000] shrink-0" />, url: 'https://youtube.com/@studiomeroclick', color: '#FF0000' }
+                      ];
+                      return [...items, ...items];
+                    })().map((social, index) => (
+                      <Box
+                        key={`${social.name}-${index}`}
+                        component="a"
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         sx={{
-                          fontWeight: 600,
-                          color: "text.primary",
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.5,
+                          px: { xs: 2.5, md: 3 },
+                          py: { xs: 1.25, md: 1.5 },
+                          textDecoration: 'none',
+                          borderRadius: '100px',
+                          border: '1px solid',
+                          borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                          backdropFilter: 'blur(10px)',
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer',
+                          minWidth: 'max-content',
+                          '&:hover': {
+                            transform: 'translateY(-3px)',
+                            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                            borderColor: social.color,
+                            boxShadow: `0 4px 20px ${social.color}25`
+                          }
                         }}
                       >
-                        Instagram
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.secondary", display: { xs: "none", sm: "block" }, textDecoration: "none" }}
-                      >
-                        Follow our work
-                      </Typography>
-                    </Box>
+                        {social.icon}
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                          <Typography variant="subtitle2" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700, color: 'text.primary', fontSize: '0.9rem', lineHeight: 1.2 }}>
+                            {social.name}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 500 }}>
+                            {social.desc}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
                   </Box>
                 </Box>
-
-                <Box
-                  component="a"
-                  href="https://facebook.com/studiomeroclick"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textDecoration: "none" }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
-                    <Facebook
-                      size={24}
-                      className="text-[#1877F2] shrink-0"
-                    />
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 600,
-                          color: "text.primary",
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                        }}
-                      >
-                        Facebook
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.secondary", display: { xs: "none", sm: "block" }, textDecoration: "none" }}
-                      >
-                        Join our community
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-
-                <Box
-                  component="a"
-                  href="https://tiktok.com/@studiomeroclick"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textDecoration: "none" }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-black dark:text-white shrink-0"
-                    >
-                      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5v3a3 3 0 0 1-3-3" />
-                    </svg>
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 600,
-                          color: "text.primary",
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                        }}
-                      >
-                        TikTok
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.secondary", display: { xs: "none", sm: "block" }, textDecoration: "none" }}
-                      >
-                        Follow our trends
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-
-                <Box
-                  component="a"
-                  href="https://youtube.com/@studiomeroclick"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textDecoration: "none" }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}>
-                    <Youtube
-                      size={24}
-                      className="text-[#FF0000] shrink-0"
-                    />
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 600,
-                          color: "text.primary",
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                        }}
-                      >
-                        YouTube
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.secondary", display: { xs: "none", sm: "block" }, textDecoration: "none" }}
-                      >
-                        Watch our videos
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </div>
+              </Box>
             </motion.div>
           </div>
 
@@ -413,43 +332,48 @@ export default function Hero({ onNavigate }: HeroProps) {
                     position: 'relative',
                     width: '100%',
                     maxWidth: '440px',
-                    borderRadius: '12px',
+                    minHeight: { xs: '480px', sm: '540px' },
+                    borderRadius: '16px',
                     border: '1px solid',
                     borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-                    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.6)',
-                    backdropFilter: 'blur(12px)',
-                    boxShadow: isDark ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 25px 50px -12px rgba(0, 0, 0, 0.04)',
+                    boxShadow: isDark ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
                     overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
                   }}
                   id="hero-active-ads-container"
                 >
-                  {/* Image & Overlay portion */}
-                  <Box sx={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
-                    <img
-                      src={offers[activeAdIndex].image}
-                      alt={offers[activeAdIndex].title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      referrerPolicy="no-referrer"
-                    />
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'linear-gradient(to top, rgba(15, 23, 42, 1) 0%, rgba(15, 23, 42, 0.3) 70%, rgba(15, 23, 42, 0.0) 100%)',
-                      }}
-                    />
+                  {/* Full Cover Image */}
+                  <img
+                    src={offers[activeAdIndex].image}
+                    alt={offers[activeAdIndex].title}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
+                    referrerPolicy="no-referrer"
+                  />
 
+                  {/* Gradient Overlay for Text Readability */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: isDark
+                        ? 'linear-gradient(to top, rgba(5, 5, 5, 1) 0%, rgba(5, 5, 5, 0.8) 45%, rgba(5, 5, 5, 0) 100%)'
+                        : 'linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 45%, rgba(0, 0, 0, 0) 100%)',
+                      zIndex: 1,
+                    }}
+                  />
+
+                  {/* Top Elements (Badge & Valid Until) */}
+                  <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', zIndex: 2 }}>
                     {/* Hot Promo badge */}
                     <Box
                       sx={{
-                        position: 'absolute',
-                        top: '16px',
-                        left: '16px',
                         backgroundColor: '#E50914',
                         color: '#ffffff',
                         px: 1.5,
                         py: 0.5,
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         fontSize: '0.65rem',
                         fontWeight: 700,
                         fontFamily: '"Space Grotesk", sans-serif',
@@ -459,33 +383,10 @@ export default function Hero({ onNavigate }: HeroProps) {
                     >
                       {offers[activeAdIndex].badge}
                     </Box>
-
-                    {/* Valid until tag */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: '12px',
-                        left: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        backgroundColor: 'rgba(0,0,0,0.6)',
-                        backdropFilter: 'blur(4px)',
-                        color: '#ffffff',
-                        px: 1,
-                        py: 0.3,
-                        borderRadius: '4px',
-                      }}
-                    >
-                      <Clock size={12} className="text-[#E50914]" />
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 500 }}>
-                        {offers[activeAdIndex].validUntil}
-                      </Typography>
-                    </Box>
                   </Box>
 
-                  {/* Content Details Portion */}
-                  <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {/* Content Details Portion (Bottom) */}
+                  <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1.5, zIndex: 2, position: 'relative' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Percent size={16} style={{ color: offers[activeAdIndex].accentColor }} />
                       <Typography
@@ -507,45 +408,44 @@ export default function Hero({ onNavigate }: HeroProps) {
                       sx={{
                         fontFamily: '"Space Grotesk", sans-serif',
                         fontWeight: 700,
-                        fontSize: '1.2rem',
-                        lineHeight: 1.3,
-                        color: isDark ? '#ffffff' : '#0f172a',
+                        fontSize: '1.4rem',
+                        lineHeight: 1.2,
+                        color: '#ffffff',
                       }}
                     >
                       {offers[activeAdIndex].title}
                     </Typography>
-
+{/* 
                     <Typography
                       variant="body2"
                       sx={{
-                        color: isDark ? '#cbd5e1' : '#475569',
-                        fontSize: '0.85rem',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        fontSize: '0.9rem',
                         lineHeight: 1.5,
                         fontWeight: 300,
-                        minHeight: '4.5rem',
+                        minHeight: '3rem',
                       }}
                     >
                       {offers[activeAdIndex].description}
-                    </Typography>
+                    </Typography> */}
 
                     {/* Navigation dots & buttons Row */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justify: 'space-between', mt: 1, pt: 1.5, borderTop: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                       {/* Arrow controls */}
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
                         <Button
                           size="small"
                           onClick={() => setActiveAdIndex((prev) => (prev - 1 + offers.length) % offers.length)}
                           sx={{
-                            minWidth: '28px',
-                            width: '28px',
-                            height: '28px',
+                            minWidth: '32px',
+                            width: '32px',
+                            height: '32px',
                             p: 0,
-                            borderRadius: '4px',
-                            border: '1px solid',
-                            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-                            color: isDark ? '#94a3b8' : '#64748b',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            color: '#ffffff',
                             '&:hover': {
-                              backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                              backgroundColor: 'rgba(255,255,255,0.1)',
                             }
                           }}
                         >
@@ -553,7 +453,7 @@ export default function Hero({ onNavigate }: HeroProps) {
                         </Button>
 
                         {/* Mini Pagination Dots */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, px: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5 }}>
                           {offers.map((_, idx) => (
                             <Box
                               key={idx}
@@ -562,10 +462,10 @@ export default function Hero({ onNavigate }: HeroProps) {
                                 width: '6px',
                                 height: '6px',
                                 borderRadius: '50%',
-                                backgroundColor: idx === activeAdIndex ? offers[idx].accentColor : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
+                                backgroundColor: idx === activeAdIndex ? offers[idx].accentColor : 'rgba(255,255,255,0.3)',
                                 cursor: 'pointer',
                                 transition: 'all 0.25s ease',
-                                transform: idx === activeAdIndex ? 'scale(1.2)' : 'scale(1)',
+                                transform: idx === activeAdIndex ? 'scale(1.3)' : 'scale(1)',
                               }}
                             />
                           ))}
@@ -575,16 +475,15 @@ export default function Hero({ onNavigate }: HeroProps) {
                           size="small"
                           onClick={() => setActiveAdIndex((prev) => (prev + 1) % offers.length)}
                           sx={{
-                            minWidth: '28px',
-                            width: '28px',
-                            height: '28px',
+                            minWidth: '32px',
+                            width: '32px',
+                            height: '32px',
                             p: 0,
-                            borderRadius: '4px',
-                            border: '1px solid',
-                            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-                            color: isDark ? '#94a3b8' : '#64748b',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            color: '#ffffff',
                             '&:hover': {
-                              backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                              backgroundColor: 'rgba(255,255,255,0.1)',
                             }
                           }}
                         >
@@ -600,16 +499,17 @@ export default function Hero({ onNavigate }: HeroProps) {
                         sx={{
                           backgroundColor: offers[activeAdIndex].accentColor,
                           fontFamily: '"Space Grotesk", sans-serif',
-                          fontWeight: 600,
+                          fontWeight: 650,
                           textTransform: 'none',
-                          fontSize: '0.75rem',
-                          px: 2,
-                          py: 0.75,
-                          borderRadius: '4px',
-                          boxShadow: `0 4px 12px ${offers[activeAdIndex].accentColor}33`,
+                          fontSize: '0.8rem',
+                          px: 2.5,
+                          py: 1,
+                          borderRadius: '8px',
+                          boxShadow: `0 4px 15px ${offers[activeAdIndex].accentColor}40`,
                           '&:hover': {
                             backgroundColor: offers[activeAdIndex].accentColor,
                             filter: 'brightness(1.15)',
+                            transform: 'translateY(-1px)'
                           }
                         }}
                       >
