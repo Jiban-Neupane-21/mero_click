@@ -27,7 +27,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: "p3",
     title: "Nepalese Bride Traditional Cinematic Video",
-    category: "Studio",
+    category: "Wedding",
     imageUrl:
       "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=600",
     specLabel: "Commercial Reels & Cinematic Grade",
@@ -36,7 +36,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: "p4",
     title: "Classic Rich Walnut Carved Photo Frame",
-    category: "Photo Frame",
+    category: "Customize Gifts",
     imageUrl:
       "https://images.unsplash.com/photo-1603184017968-902a6285a521?q=80&w=600",
     specLabel: '16" x 24" Custom Fabrication',
@@ -64,7 +64,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: "p8",
     title: "Glossy Collage Frame with Family Shots",
-    category: "Photo Frame",
+    category: "Customize Gifts",
     imageUrl:
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600",
     specLabel: "Multi-opening Board Matte Wood",

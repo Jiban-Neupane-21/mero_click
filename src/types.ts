@@ -31,7 +31,9 @@ export interface StudioService {
   | "Photography"
   | "Customized Gift"
   | "Photo Enhancement"
-  | "Document Service";
+  | "Document Service"
+  | "Videography"
+  | "Visa";
   basePrice: string;
   duration: string;
   description: string;
@@ -51,13 +53,14 @@ export interface PortfolioItem {
   id: string;
   title: string;
   category:
-  | "Portrait"
-  | "Commercial"
-  | "Studio"
-  | "Identity Photo"
   | "Wedding"
-  | "Photo Frame"
-  | "Customize Gifts"
+  | "Maternity"
+  | "Cake Smash"
+  | "Fashion"
+  | "Portrait"
+  | "Identity Photo"
+  | "Commercial"
+  | "Customize Gifts";
   imageUrl: string;
   specLabel?: string;
   author?: string;
@@ -75,9 +78,9 @@ export interface VideoItem {
   youtubeId: string;
   category:
   | "Wedding Reel"
-  | "Cinematography"
+  | "Fashion"
   | "Behind the Scenes"
-  | "Studio Promo"
+  | "UCG Ads"
   | "Commercial";
   duration: string;
   description: string;

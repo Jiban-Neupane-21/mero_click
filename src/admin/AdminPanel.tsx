@@ -1319,10 +1319,20 @@ export default function AdminPanel({
                               display: "block",
                             }}
                           >
-                            YouTube ID:{" "}
-                            <span className="font-mono text-xs">
-                              {vid.youtubeId}
-                            </span>
+                            {vid.youtubeId ? (
+                              <>
+                                YouTube ID:{" "}
+                                <span className="font-mono text-xs">
+                                  {vid.youtubeId}
+                                </span>
+                              </>
+                            ) : (vid as any).facebookLink ? (
+                              <>Facebook Video</>
+                            ) : (vid as any).tiktokLink ? (
+                              <>TikTok Video</>
+                            ) : (
+                              <>External Video</>
+                            )}
                           </Typography>
                         </Box>
                         <Box
@@ -1337,7 +1347,13 @@ export default function AdminPanel({
                         >
                           <IconButton
                             size="small"
-                            href={`https://www.youtube.com/watch?v=${vid.youtubeId}`}
+                            href={
+                              vid.youtubeId
+                                ? `https://www.youtube.com/watch?v=${vid.youtubeId}`
+                                : (vid as any).facebookLink
+                                ? (vid as any).facebookLink
+                                : (vid as any).tiktokLink
+                            }
                             target="_blank"
                             sx={{
                               color: "rgba(255,255,255,0.5)",
@@ -2441,12 +2457,13 @@ export default function AdminPanel({
                 }}
               >
                 {[
-                  "Portrait",
-                  "Commercial",
-                  "Studio",
-                  "Identity Photo",
                   "Wedding",
-                  "Photo Frame",
+                  "Maternity",
+                  "Cake Smash",
+                  "Fashion",
+                  "Portrait",
+                  "Identity Photo",
+                  "Commercial",
                   "Customize Gifts",
                 ].map((cat) => (
                   <MenuItem key={cat} value={cat}>
@@ -2820,9 +2837,9 @@ export default function AdminPanel({
               >
                 {[
                   "Wedding Reel",
-                  "Cinematography",
+                  "Fashion",
                   "Behind the Scenes",
-                  "Studio Promo",
+                  "UCG Ads",
                   "Commercial",
                 ].map((cat) => (
                   <MenuItem key={cat} value={cat}>

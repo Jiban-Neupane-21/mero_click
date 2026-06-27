@@ -57,11 +57,12 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
   const categories = [
     { id: 'all', label: 'All Projects' },
     { id: 'Wedding', label: 'Cinematic Weddings' },
+    { id: 'Maternity', label: 'Maternity' },
+    { id: 'Cake Smash', label: 'Cake Smash' },
+    { id: 'Fashion', label: 'Fashion' },
     { id: 'Portrait', label: 'Executive Portraits' },
     { id: 'Identity Photo', label: 'Identity Photo' },
     { id: 'Commercial', label: 'Commercial Shoot' },
-    { id: 'Studio', label: 'Studio Sessions' },
-    { id: 'Photo Frame', label: 'Custom Framing' },
     { id: 'Customize Gifts', label: 'Customize Gifts' },
   ];
 
