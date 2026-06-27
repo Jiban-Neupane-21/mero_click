@@ -157,7 +157,7 @@ export default function ServiceCatalog({
               letterSpacing: "-0.01em",
             }}
           >
-            Our Photography Specialties
+            What We Provide in Our Services
           </Typography>
           <Typography
             variant="body1"

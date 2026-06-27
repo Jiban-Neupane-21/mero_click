@@ -320,6 +320,8 @@ export const apiService = {
           day: "numeric",
           year: "numeric",
         }),
+      facebookLink: video.facebookLink,
+      tiktokLink: video.tiktokLink,
     };
 
     if (isSupabaseConfigured && supabase) {

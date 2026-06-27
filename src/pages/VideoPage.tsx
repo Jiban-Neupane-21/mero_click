@@ -308,14 +308,36 @@ export default function VideoSection() {
                     borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}`,
                   }}
                 >
-                  <iframe
-                    title={spotlightVideo.title}
-                    src={`https://www.youtube.com/embed/${spotlightVideo.youtubeId}?autoplay=0&rel=0`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    className="absolute inset-0 w-full height-full border-none"
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  {spotlightVideo.youtubeId ? (
+                    <iframe
+                      title={spotlightVideo.title}
+                      src={`https://www.youtube.com/embed/${spotlightVideo.youtubeId}?autoplay=0&rel=0`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="absolute inset-0 w-full height-full border-none"
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : spotlightVideo.facebookLink ? (
+                    <iframe 
+                      src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(spotlightVideo.facebookLink)}&show_text=false&width=auto`} 
+                      className="absolute inset-0 w-full height-full border-none"
+                      style={{ width: "100%", height: "100%", border: "none", overflow: "hidden" }} 
+                      allowFullScreen 
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" 
+                    />
+                  ) : spotlightVideo.tiktokLink ? (
+                    <iframe
+                       src={`https://www.tiktok.com/embed/v2/${(spotlightVideo.tiktokLink.match(/\/video\/(\d+)/) || [])[1] || ''}`}
+                       className="absolute inset-0 w-full height-full border-none"
+                       style={{ width: "100%", height: "100%", border: "none", overflow: "hidden" }}
+                    />
+                  ) : (
+                    <Box sx={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", backgroundColor: "#111111", color: "rgba(255,255,255,0.6)" }}>
+                       <Video size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
+                       <Typography variant="body1">Video preview not available</Typography>
+                       <Typography variant="caption" sx={{ mt: 1 }}>Please use external links below</Typography>
+                    </Box>
+                  )}
                 </Box>
 
                 <CardContent sx={{ p: { xs: 3, md: 4 } }}>
@@ -401,29 +423,81 @@ export default function VideoSection() {
                           ? "Saved Link!"
                           : "Copy Link"}
                       </Button>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        href={`https://www.youtube.com/watch?v=${spotlightVideo.youtubeId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        startIcon={<ExternalLink size={13} />}
-                        sx={{
-                          fontFamily: '"Space Grotesk", sans-serif',
-                          textTransform: "none",
-                          color: "text.secondary",
-                          borderColor: isDark
-                            ? "rgba(255,255,255,0.1)"
-                            : "rgba(0,0,0,0.1)",
-                          borderRadius: "4px",
-                          "&:hover": {
-                            borderColor: "#E50914",
-                            backgroundColor: "rgba(229,9,20,0.03)",
-                          },
-                        }}
-                      >
-                        YouTube
-                      </Button>
+                      {spotlightVideo.youtubeId && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          href={`https://www.youtube.com/watch?v=${spotlightVideo.youtubeId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          startIcon={<ExternalLink size={13} />}
+                          sx={{
+                            fontFamily: '"Space Grotesk", sans-serif',
+                            textTransform: "none",
+                            color: "text.secondary",
+                            borderColor: isDark
+                              ? "rgba(255,255,255,0.1)"
+                              : "rgba(0,0,0,0.1)",
+                            borderRadius: "4px",
+                            "&:hover": {
+                              borderColor: "#E50914",
+                              backgroundColor: "rgba(229,9,20,0.03)",
+                            },
+                          }}
+                        >
+                          YouTube
+                        </Button>
+                      )}
+                      {spotlightVideo.facebookLink && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          href={spotlightVideo.facebookLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          startIcon={<ExternalLink size={13} />}
+                          sx={{
+                            fontFamily: '"Space Grotesk", sans-serif',
+                            textTransform: "none",
+                            color: "text.secondary",
+                            borderColor: isDark
+                              ? "rgba(255,255,255,0.1)"
+                              : "rgba(0,0,0,0.1)",
+                            borderRadius: "4px",
+                            "&:hover": {
+                              borderColor: "#E50914",
+                              backgroundColor: "rgba(229,9,20,0.03)",
+                            },
+                          }}
+                        >
+                          Facebook
+                        </Button>
+                      )}
+                      {spotlightVideo.tiktokLink && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          href={spotlightVideo.tiktokLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          startIcon={<ExternalLink size={13} />}
+                          sx={{
+                            fontFamily: '"Space Grotesk", sans-serif',
+                            textTransform: "none",
+                            color: "text.secondary",
+                            borderColor: isDark
+                              ? "rgba(255,255,255,0.1)"
+                              : "rgba(0,0,0,0.1)",
+                            borderRadius: "4px",
+                            "&:hover": {
+                              borderColor: "#E50914",
+                              backgroundColor: "rgba(229,9,20,0.03)",
+                            },
+                          }}
+                        >
+                          TikTok
+                        </Button>
+                      )}
                     </Box>
                   </Box>
 
@@ -539,15 +613,21 @@ export default function VideoSection() {
                         backgroundColor: "#000000",
                       }}
                     >
-                      <img
-                        src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
-                        alt={video.title}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
+                      {video.youtubeId ? (
+                        <img
+                          src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
+                          alt={video.title}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: video.facebookLink ? "#1877F2" : video.tiktokLink ? "#000000" : "#222", border: video.tiktokLink ? "1px solid #333" : "none" }}>
+                          <Video size={20} color={video.facebookLink || video.tiktokLink ? "#ffffff" : "rgba(255,255,255,0.3)"} />
+                        </Box>
+                      )}
                       <Box
                         sx={{
                           position: "absolute",

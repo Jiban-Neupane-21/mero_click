@@ -88,12 +88,15 @@ export default function AdminPanel({
   });
 
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [activeVideoModalType, setActiveVideoModalType] = useState<"youtube" | "facebook" | "tiktok">("youtube");
   const [videoForm, setVideoForm] = useState({
     title: "",
     youtubeUrlOrId: "",
     category: "Cinematography",
     duration: "",
     description: "",
+    facebookLink: "",
+    tiktokLink: "",
   });
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
@@ -317,21 +320,26 @@ export default function AdminPanel({
 
   const handleSaveVideo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!videoForm.title || !videoForm.youtubeUrlOrId) {
-      triggerAlert(
-        "error",
-        "Please enter a video title and YouTube URL or ID.",
-      );
+    if (!videoForm.title) {
+      triggerAlert("error", "Please enter a video title.");
       return;
     }
 
-    const youtubeId = extractYoutubeId(videoForm.youtubeUrlOrId);
-    if (youtubeId.length !== 11) {
-      triggerAlert(
-        "error",
-        "Unable to parse standard YouTube video ID. Ensure link is correct.",
-      );
+    if (!videoForm.youtubeUrlOrId && !(videoForm as any).facebookLink && !(videoForm as any).tiktokLink) {
+      triggerAlert("error", "Please provide at least one link (YouTube, Facebook, or TikTok).");
       return;
+    }
+
+    let youtubeId = "";
+    if (videoForm.youtubeUrlOrId) {
+      youtubeId = extractYoutubeId(videoForm.youtubeUrlOrId);
+      if (youtubeId.length !== 11) {
+        triggerAlert(
+          "error",
+          "Unable to parse standard YouTube video ID. Ensure link is correct.",
+        );
+        return;
+      }
     }
 
     try {
@@ -346,6 +354,8 @@ export default function AdminPanel({
           day: "numeric",
           year: "numeric",
         }),
+        facebookLink: (videoForm as any).facebookLink,
+        tiktokLink: (videoForm as any).tiktokLink,
       });
 
       triggerAlert(
@@ -359,6 +369,8 @@ export default function AdminPanel({
         category: "Cinematography",
         duration: "",
         description: "",
+        facebookLink: "",
+        tiktokLink: "",
       });
       loadDatabaseItems();
       if (onDataChange) onDataChange();
@@ -1156,21 +1168,32 @@ export default function AdminPanel({
               >
                 Cinematic Videos Showcase ({videos.length} videos)
               </Typography>
-              <Button
-                variant="contained"
-                onClick={() => setIsVideoModalOpen(true)}
-                startIcon={<PlusCircle size={16} />}
-                sx={{
-                  backgroundColor: "#E50914",
-                  fontFamily: '"Space Grotesk", sans-serif',
-                  textTransform: "none",
-                  borderRadius: "6px",
-                  fontWeight: 600,
-                  "&:hover": { backgroundColor: "#b91c1c" },
-                }}
-              >
-                Add YouTube Video Link
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => { setActiveVideoModalType("youtube"); setIsVideoModalOpen(true); }}
+                  startIcon={<PlusCircle size={16} />}
+                  sx={{ backgroundColor: "#E50914", fontFamily: '"Space Grotesk", sans-serif', textTransform: "none", borderRadius: "6px", fontWeight: 600, "&:hover": { backgroundColor: "#b91c1c" } }}
+                >
+                  YouTube Video
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => { setActiveVideoModalType("facebook"); setIsVideoModalOpen(true); }}
+                  startIcon={<PlusCircle size={16} />}
+                  sx={{ backgroundColor: "#1877F2", fontFamily: '"Space Grotesk", sans-serif', textTransform: "none", borderRadius: "6px", fontWeight: 600, "&:hover": { backgroundColor: "#166FE5" } }}
+                >
+                  Facebook Video
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => { setActiveVideoModalType("tiktok"); setIsVideoModalOpen(true); }}
+                  startIcon={<PlusCircle size={16} />}
+                  sx={{ backgroundColor: "#000000", border: '1px solid rgba(255,255,255,0.2)', fontFamily: '"Space Grotesk", sans-serif', textTransform: "none", borderRadius: "6px", fontWeight: 600, "&:hover": { backgroundColor: "#111111" } }}
+                >
+                  TikTok Video
+                </Button>
+              </Box>
             </Box>
 
             {loading ? (
@@ -1215,15 +1238,21 @@ export default function AdminPanel({
                           backgroundColor: "#000000",
                         }}
                       >
-                        <img
-                          src={`https://img.youtube.com/vi/${vid.youtubeId}/mqdefault.jpg`}
-                          alt={vid.title}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
+                        {vid.youtubeId ? (
+                          <img
+                            src={`https://img.youtube.com/vi/${vid.youtubeId}/mqdefault.jpg`}
+                            alt={vid.title}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: (vid as any).facebookLink ? "#1877F2" : (vid as any).tiktokLink ? "#000000" : "#222", border: (vid as any).tiktokLink ? "1px solid #333" : "none" }}>
+                            <VideoIcon size={32} color={(vid as any).facebookLink || (vid as any).tiktokLink ? "#ffffff" : "rgba(255,255,255,0.3)"} />
+                          </Box>
+                        )}
                         <Box sx={{ position: "absolute", top: 8, left: 8 }}>
                           <Chip
                             label={vid.category}
@@ -1552,16 +1581,16 @@ export default function AdminPanel({
                                   ? item.features
                                   : []
                                 ).length > 3 && (
-                                  <Chip
-                                    label={`+${item.features.length - 3} more`}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: "rgba(255,255,255,0.04)",
-                                      color: "rgba(255,255,255,0.5)",
-                                      fontSize: "0.65rem",
-                                    }}
-                                  />
-                                )}
+                                    <Chip
+                                      label={`+${item.features.length - 3} more`}
+                                      size="small"
+                                      sx={{
+                                        backgroundColor: "rgba(255,255,255,0.04)",
+                                        color: "rgba(255,255,255,0.5)",
+                                        fontSize: "0.65rem",
+                                      }}
+                                    />
+                                  )}
                               </div>
                             </Box>
                           )}
@@ -1969,15 +1998,21 @@ export default function AdminPanel({
                           backgroundColor: "#000000",
                         }}
                       >
-                        <img
-                          src={`https://img.youtube.com/vi/${vid.youtubeId}/mqdefault.jpg`}
-                          alt={vid.title}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
+                        {vid.youtubeId ? (
+                          <img
+                            src={`https://img.youtube.com/vi/${vid.youtubeId}/mqdefault.jpg`}
+                            alt={vid.title}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: (vid as any).facebookLink ? "#1877F2" : (vid as any).tiktokLink ? "#000000" : "#222", border: (vid as any).tiktokLink ? "1px solid #333" : "none" }}>
+                            <VideoIcon size={32} color={(vid as any).facebookLink || (vid as any).tiktokLink ? "#ffffff" : "rgba(255,255,255,0.3)"} />
+                          </Box>
+                        )}
                         <Box sx={{ position: "absolute", top: 8, left: 8 }}>
                           <Chip
                             label={vid.category}
@@ -2667,7 +2702,7 @@ export default function AdminPanel({
                 fontWeight: 700,
               }}
             >
-              Insert New Cinematic Video Link
+              Insert New {activeVideoModalType === 'youtube' ? 'YouTube' : activeVideoModalType === 'facebook' ? 'Facebook' : 'TikTok'} Video
             </DialogTitle>
             <DialogContent sx={{ p: 4 }}>
               <TextField
@@ -2695,51 +2730,67 @@ export default function AdminPanel({
                 }}
               />
 
-              <TextField
-                fullWidth
-                label="YouTube URL or 11-Digit Video ID"
-                placeholder="e.g. https://www.youtube.com/watch?v=8F735-S_TzI or just 8F735-S_TzI"
-                margin="normal"
-                required
-                value={videoForm.youtubeUrlOrId}
-                onChange={(e) =>
-                  handleVideoFormChange("youtubeUrlOrId", e.target.value)
-                }
-                helperText="Fully supports full watch URLs, sharing links, embed sequences, or pure IDs."
-                slotProps={{
-                  inputLabel: {
-                    style: {
-                      color: "rgba(255, 255, 255, 0.6)",
-                      fontFamily: '"Space Grotesk"',
+              {activeVideoModalType === "youtube" && (
+                <TextField
+                  fullWidth
+                  label="YouTube URL or 11-Digit Video ID"
+                  placeholder="e.g. https://www.youtube.com/watch?v=8F735-S_TzI or just 8F735-S_TzI"
+                  margin="normal"
+                  required
+                  value={videoForm.youtubeUrlOrId}
+                  onChange={(e) =>
+                    handleVideoFormChange("youtubeUrlOrId", e.target.value)
+                  }
+                  helperText="Fully supports full watch URLs, sharing links, embed sequences, or pure IDs."
+                  slotProps={{
+                    inputLabel: { style: { color: "rgba(255, 255, 255, 0.6)", fontFamily: '"Space Grotesk"' } },
+                    formHelperText: { style: { color: "rgba(255,255,255,0.4)", fontSize: "0.72rem" } },
+                    input: {
+                      style: { color: "#ffffff" },
+                      startAdornment: (
+                        <IconButton size="small" edge="start" sx={{ color: "rgba(255,255,255,0.4)" }}>
+                          <VideoIcon size={14} />
+                        </IconButton>
+                      ),
                     },
-                  },
-                  formHelperText: {
-                    style: {
-                      color: "rgba(255,255,255,0.4)",
-                      fontSize: "0.72rem",
-                    },
-                  },
-                  input: {
-                    style: { color: "#ffffff" },
-                    startAdornment: (
-                      <IconButton
-                        size="small"
-                        edge="start"
-                        sx={{ color: "rgba(255,255,255,0.4)" }}
-                      >
-                        <VideoIcon size={14} />
-                      </IconButton>
-                    ),
-                  },
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
-                    "&:hover fieldset": { borderColor: "#E50914" },
-                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
-                  },
-                }}
-              />
+                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" }, "&:hover fieldset": { borderColor: "#E50914" }, "&.Mui-focused fieldset": { borderColor: "#E50914" } } }}
+                />
+              )}
+
+              {activeVideoModalType === "facebook" && (
+                <TextField
+                  fullWidth
+                  label="Facebook Video Link"
+                  placeholder="https://facebook.com/..."
+                  margin="normal"
+                  required
+                  value={(videoForm as any).facebookLink || ""}
+                  onChange={(e) => handleVideoFormChange("facebookLink", e.target.value)}
+                  slotProps={{
+                    inputLabel: { style: { color: "rgba(255, 255, 255, 0.6)", fontFamily: '"Space Grotesk"' } },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" }, "&:hover fieldset": { borderColor: "#E50914" }, "&.Mui-focused fieldset": { borderColor: "#E50914" } } }}
+                />
+              )}
+
+              {activeVideoModalType === "tiktok" && (
+                <TextField
+                  fullWidth
+                  label="TikTok Video Link"
+                  placeholder="https://tiktok.com/..."
+                  margin="normal"
+                  required
+                  value={(videoForm as any).tiktokLink || ""}
+                  onChange={(e) => handleVideoFormChange("tiktokLink", e.target.value)}
+                  slotProps={{
+                    inputLabel: { style: { color: "rgba(255, 255, 255, 0.6)", fontFamily: '"Space Grotesk"' } },
+                    input: { style: { color: "#ffffff" } },
+                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" }, "&:hover fieldset": { borderColor: "#E50914" }, "&.Mui-focused fieldset": { borderColor: "#E50914" } } }}
+                />
+              )}
 
               <TextField
                 select

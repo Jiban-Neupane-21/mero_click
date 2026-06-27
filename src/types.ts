@@ -82,6 +82,8 @@ export interface VideoItem {
   duration: string;
   description: string;
   uploadDate: string;
+  facebookLink?: string;
+  tiktokLink?: string;
 }
 
 export interface OfferAd {

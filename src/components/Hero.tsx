@@ -415,19 +415,6 @@ export default function Hero({ onNavigate }: HeroProps) {
                     >
                       {offers[activeAdIndex].title}
                     </Typography>
-{/* 
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        fontSize: '0.9rem',
-                        lineHeight: 1.5,
-                        fontWeight: 300,
-                        minHeight: '3rem',
-                      }}
-                    >
-                      {offers[activeAdIndex].description}
-                    </Typography> */}
 
                     {/* Navigation dots & buttons Row */}
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>

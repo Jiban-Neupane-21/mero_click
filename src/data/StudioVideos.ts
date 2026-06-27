@@ -8,7 +8,9 @@ export const STUDIO_VIDEOS: VideoItem[] = [
     category: 'Cinematography',
     duration: '3:45',
     description: 'A breathtaking 4K collection of mountain passes, valley mornings, and street portraiture captured on our RED & Sony FX3 cinema systems.',
-    uploadDate: 'Mar 12, 2026'
+    uploadDate: 'Mar 12, 2026',
+    facebookLink: 'https://facebook.com/watch/?v=123456789',
+    tiktokLink: 'https://tiktok.com/@studio/video/123456789'
   },
   {
     id: 'v2',
