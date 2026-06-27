@@ -5,10 +5,12 @@ export const STUDIO_VIDEOS: VideoItem[] = [
     id: 'v1',
     title: 'Sovereign Landscapes: Cinematic Nepal Study',
     youtubeId: '8F735-S_TzI',
-    category: 'Cinematography',
+    category: 'Fashion',
     duration: '3:45',
     description: 'A breathtaking 4K collection of mountain passes, valley mornings, and street portraiture captured on our RED & Sony FX3 cinema systems.',
-    uploadDate: 'Mar 12, 2026'
+    uploadDate: 'Mar 12, 2026',
+    facebookLink: 'https://facebook.com/watch/?v=123456789',
+    tiktokLink: 'https://tiktok.com/@studio/video/123456789'
   },
   {
     id: 'v2',
@@ -32,7 +34,7 @@ export const STUDIO_VIDEOS: VideoItem[] = [
     id: 'v4',
     title: 'Dynamic Kathmandu: City of Heritage in Motion',
     youtubeId: 'y1K2_wXo1fI',
-    category: 'Cinematography',
+    category: 'Fashion',
     duration: '2:50',
     description: 'A visual exploration of ancient Kathmandu Durbar Square lifestyle, cultural dance details, and bokeh-filled night cinematography prompts.',
     uploadDate: 'Feb 15, 2026'
@@ -50,7 +52,7 @@ export const STUDIO_VIDEOS: VideoItem[] = [
     id: 'v6',
     title: 'PhotoStudio Kathmandu Promo: Craft, Biometrics & Quality',
     youtubeId: '9vY7XfNl8C0',
-    category: 'Studio Promo',
+    category: 'UCG Ads',
     duration: '2:10',
     description: 'Meet the specialized media team at New Baneshwor. Explore how we fuse state-of-the-art biometric validation tolerances with traditional wood framing crafts.',
     uploadDate: 'Jun 10, 2026'

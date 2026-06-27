@@ -48,12 +48,10 @@ export default function ServiceCatalog({
   const categories = React.useMemo(() => {
     const list = [
       "All",
-      "Visa",
+      "Identity Photo",
       "Portrait",
       "Wedding",
-      "Videography",
       "Photo Frame",
-      "Product",
       "Photography",
       "Photo Enhancement",
       "Customized Gift",
@@ -82,9 +80,9 @@ export default function ServiceCatalog({
     selectedCategory === "All"
       ? services
       : services.filter(
-          (service) =>
-            service.category.toLowerCase() === selectedCategory.toLowerCase(),
-        );
+        (service) =>
+          service.category.toLowerCase() === selectedCategory.toLowerCase(),
+      );
 
   React.useEffect(() => {
     let active = true;
@@ -159,7 +157,7 @@ export default function ServiceCatalog({
               letterSpacing: "-0.01em",
             }}
           >
-            Our Photography Specialties
+            What We Provide in Our Services
           </Typography>
           <Typography
             variant="body1"
@@ -448,14 +446,14 @@ export default function ServiceCatalog({
                         ? service.features
                         : typeof service.features === "string"
                           ? (() => {
-                              try {
-                                return JSON.parse(service.features);
-                              } catch {
-                                return (service.features as any)
-                                  .split("\n")
-                                  .filter(Boolean);
-                              }
-                            })()
+                            try {
+                              return JSON.parse(service.features);
+                            } catch {
+                              return (service.features as any)
+                                .split("\n")
+                                .filter(Boolean);
+                            }
+                          })()
                           : []
                       ).map((feature: string, idx: number) => (
                         <ListItem key={idx} sx={{ px: 0, py: 0.5 }}>

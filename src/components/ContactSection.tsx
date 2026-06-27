@@ -165,7 +165,7 @@ export default function ContactSection() {
                       lineHeight: 1.4,
                     }}
                   >
-                    Rudramati Pul <br />
+                    Rudramati Chowk <br />
                   </Typography>
                 </Box>
               </Box>
@@ -602,7 +602,7 @@ export default function ContactSection() {
                         fontFamily: "var(--font-mono)",
                       }}
                     >
-                      Rudramati Pul
+                      Rudramati Chowck
                     </Typography>
                   </Box>
 

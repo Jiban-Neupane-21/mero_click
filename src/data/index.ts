@@ -7,3 +7,4 @@ export * from "./photoPresets";
 export * from "./studioServices";
 export * from "./portfolioItems";
 export * from "./faqItems";
+export * from "./offerAds";

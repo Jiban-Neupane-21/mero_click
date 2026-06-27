@@ -25,11 +25,11 @@ import { PortfolioItem } from "../types";
 export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
-  
+
   const [activeTab, setActiveTab] = useState(() => {
     return categoryParam || 'all';
   });
-  
+
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [zoomScale, setZoomScale] = useState(1);
   const theme = useTheme();
@@ -57,11 +57,13 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
   const categories = [
     { id: 'all', label: 'All Projects' },
     { id: 'Wedding', label: 'Cinematic Weddings' },
+    { id: 'Maternity', label: 'Maternity' },
+    { id: 'Cake Smash', label: 'Cake Smash' },
+    { id: 'Fashion', label: 'Fashion' },
     { id: 'Portrait', label: 'Executive Portraits' },
-    { id: 'Visa', label: 'Visa & Biometrics' },
-    { id: 'Videography', label: 'Studio & Commercial Films' },
-    { id: 'Photo Frame', label: 'Custom Framing' },
-    { id: 'Product', label: 'Product & Catalog' },
+    { id: 'Identity Photo', label: 'Identity Photo' },
+    { id: 'Commercial', label: 'Commercial Shoot' },
+    { id: 'Customize Gifts', label: 'Customize Gifts' },
   ];
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
@@ -271,10 +273,10 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
                       },
                     }}
                     referrerPolicy="no-referrer"
-                onError={(e: any) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://images.unsplash.com/photo-1622344028682-1bc6ba6b7f36?q=80&w=400&auto=format&fit=crop";
-                }}
+                    onError={(e: any) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://images.unsplash.com/photo-1622344028682-1bc6ba6b7f36?q=80&w=400&auto=format&fit=crop";
+                    }}
                   />
                   {/* Subtle hover icon zoom overlay */}
                   <Box
