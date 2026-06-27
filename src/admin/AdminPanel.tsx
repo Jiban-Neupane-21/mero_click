@@ -925,6 +925,9 @@ export default function AdminPanel({
           <Tabs
             value={activeTab}
             onChange={(_, val) => setActiveTab(val)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               "& .MuiTabs-indicator": {
                 backgroundColor: "#E50914",
