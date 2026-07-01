@@ -8,28 +8,42 @@ import { Box, Container, Typography, Button, useTheme } from "@mui/material";
 import Hero from "../components/Hero";
 import { motion } from "motion/react";
 
-
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { apiService } from "../utils/supabase";
 import { PortfolioItem } from "../types";
-
 
 import modeling5 from "../assets/Gallery/Modeling 5.jpg";
 import black from "../assets/Gallery/Black.jpg";
 import birthday from "../assets/Gallery/Birthday.jpg";
 import bride2 from "../assets/Gallery/bride 2.jpg";
 
+import wedding from "../assets/Gallery/Couple 2.jpg";
+import portrait from "../assets/Gallery/protrait.png";
+import visa from "../assets/Gallery/Pprtait 2.jpg";
+import photoFrame from "../assets/Gallery/PhotoFrame.png";
+import studio from "../assets/Gallery/Smokey.jpg";
+import events from "../assets/Gallery/Modeling 3.jpg";
+import Product from "../assets/Gallery/Ads.png";
+import PhotoPrinting from "../assets/Gallery/HighQuality.png";
 
-import wedding from "../assets/Gallery/Couple 2.jpg"
-import portrait from "../assets/Gallery/protrait.png"
-import visa from "../assets/Gallery/Pprtait 2.jpg"
-import photoFrame from "../assets/Gallery/PhotoFrame.png"
-import studio from "../assets/Gallery/Smokey.jpg"
-import events from "../assets/Gallery/Modeling 3.jpg"
-import Product from "../assets/Gallery/Ads.png"
-import PhotoPrinting from "../assets/Gallery/HighQuality.png"
+// Porduct Image Section
+
+import CupPrintImg from "../assets/Products/Cup Prints.png";
+import PhotoFrameImg from "../assets/Products/Photo Frame.jpg";
+import CollagesImg from "../assets/Products/PhotoCollages.png";
+import DuboMalaImg from "../assets/Products/ddubo ko mala.jpg";
+import PolaroidImg from "../assets/Products/Polaroid Prnt.jpg";
+import CustomDesignImg from "../assets/Products/Custom.jpg";
+import RosePreservingImg from "../assets/Products/Rose Preserving.jpg";
+
 interface HomePageProps {
   onNavigate: (sectionId: string) => void;
+}
+
+interface ServiceCardProps {
+  item: { title: string; img: string; spec?: boolean };
+  onClick: () => void;
+  index?: number;
 }
 
 export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
@@ -38,7 +52,9 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
   const isDark = theme.palette.mode === "dark";
   const navigate = useNavigate();
 
-  const [randomPortfolios, setRandomPortfolios] = React.useState<PortfolioItem[]>([]);
+  const [randomPortfolios, setRandomPortfolios] = React.useState<
+    PortfolioItem[]
+  >([]);
 
   React.useEffect(() => {
     const fetchPortfolios = async () => {
@@ -58,7 +74,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
   // Smooth redirects to the targeted portfolio filters
   const handleCategoryRedirect = (category: string) => {
     navigate(`/portfolio?category=${category}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const COLORS = {
@@ -70,7 +86,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
     line: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
   };
 
-  const ICONS = {
+  const image = {
     passport: (
       <>
         <path d="M5 3h14a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
@@ -171,33 +187,46 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
   const PRODUCTS = [
     {
       title: "Photoframe",
-      icon: "frame",
+      img: PhotoFrameImg,
     },
     {
       title: "Cup Prints",
-      icon: "coffee",
+      img: CupPrintImg,
     },
     {
       title: "Polaroid Prints",
-      icon: "camera",
+      img: PolaroidImg,
     },
     {
       title: "Collages",
-      icon: "layout",
+      img: CollagesImg,
     },
     {
       title: "Customized Designed Photo",
-      icon: "edit",
+      img: CustomDesignImg,
     },
     {
       title: "Dubo ko Mala",
-      icon: "leaf",
+      img: DuboMalaImg,
     },
     {
       title: "Rose & Mala Preservation",
-      icon: "archive",
+      img: RosePreservingImg,
     },
   ];
+
+  // A fallback in case an image is missing
+  const ICONS = {
+    frame: <path d="M4 4h16v16H4z" />,
+    coffee: (
+      <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+    ),
+    camera: <rect x="2" y="7" width="20" height="13" rx="2" ry="2" />,
+    layout: <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />,
+    edit: (
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    ),
+  };
 
   const SERVICES = [
     {
@@ -311,7 +340,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
       spec: true,
     },
   ];
-  function ServiceCard({ item, onClick, index = 0 }) {
+  function ServiceCard({ item, onClick, index = 0 }: ServiceCardProps) {
     const [hover, setHover] = React.useState(false);
 
     return (
@@ -319,7 +348,11 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-20px" }}
-        transition={{ duration: 0.5, delay: index * 0.05, ease: [0.2, 0.8, 0.2, 1] }}
+        transition={{
+          duration: 0.5,
+          delay: index * 0.05,
+          ease: [0.2, 0.8, 0.2, 1],
+        }}
         style={{ height: "100%" }}
       >
         <Box
@@ -343,7 +376,8 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
             borderRadius: "16px",
             overflow: "hidden", // Added to contain the background icon
             border: `1px solid ${hover ? COLORS.stamp : COLORS.line}`,
-            transition: "transform 0.4s cubic-bezier(.2,.8,.2,1), box-shadow 0.4s ease, border-color 0.4s ease",
+            transition:
+              "transform 0.4s cubic-bezier(.2,.8,.2,1), box-shadow 0.4s ease, border-color 0.4s ease",
             outline: "none",
             transform: hover ? "translateY(-6px)" : "none",
             boxShadow: hover
@@ -356,41 +390,30 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
             },
           }}
         >
-          {/* Background Watermark Icon */}
+          {/* Product Image at the top */}
           <Box
             sx={{
-              position: "absolute",
-              width: "180px",
-              height: "180px",
-              opacity: hover ? (isDark ? 0.08 : 0.05) : (isDark ? 0.03 : 0.02),
-              color: COLORS.ink,
-              transform: hover ? "scale(1.1) rotate(-10deg)" : "scale(1) rotate(0deg)",
-              transition: "all 0.6s cubic-bezier(.2,.8,.2,1)",
-              pointerEvents: "none",
-              zIndex: 0,
+              width: "100%",
+              flexGrow: 1,
+              overflow: "hidden",
             }}
           >
-            <svg
-              viewBox="0 0 24 24"
-              width="100%"
-              height="100%"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {ICONS[item.icon]}
-            </svg>
+            <Box
+              component="img"
+              src={item.img}
+              alt={item.title}
+              sx={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transition: "transform 0.6s cubic-bezier(.2,.8,.2,1)",
+                transform: hover ? "scale(1.05)" : "scale(1)",
+              }}
+            />
           </Box>
 
           <Box
             sx={{
-              position: "relative",
-              zIndex: 1,
-              top: "80%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -450,6 +473,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
                 strokeWidth="1.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                onClick={() => navigate("/services")}
               >
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
@@ -460,7 +484,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
     );
   }
 
-  const handleClick = (item) => {
+  const handleClick = (item: { category?: string; target: string }) => {
     if (item.category) {
       navigate(`/services?category=${encodeURIComponent(item.category)}`);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -470,7 +494,6 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
   };
 
   return (
-
     <Box id="page-home">
       <Hero onNavigate={onNavigate} />
 
@@ -518,42 +541,43 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {(randomPortfolios.length > 0
             ? randomPortfolios.map((item) => ({
-              id: item.id,
-              src: item.imageUrl,
-              overline: item.category,
-              title: item.title,
-              caption: item.specLabel || "Custom Added Image",
-            }))
+                id: item.id,
+                src: item.imageUrl,
+                overline: item.category,
+                title: item.title,
+                caption: item.specLabel || "Custom Added Image",
+              }))
             : [
-              {
-                id: "1",
-                src: modeling5,
-                overline: "Modeling",
-                title: "Prerna Shrestha",
-                caption: "Executive image captured with continuous ring lights.",
-              },
-              {
-                id: "2",
-                src: black,
-                overline: "Creative Photoshoot",
-                title: "Rohan Adhikari",
-                caption: "Black and White Photoshoot.",
-              },
-              {
-                id: "3",
-                src: birthday,
-                overline: "Birthday",
-                title: "Ananya Gautam",
-                caption: "Happy Birthday Cutie.",
-              },
-              {
-                id: "4",
-                src: bride2,
-                overline: "Creative Lighting",
-                title: "Tenzing Lama",
-                caption: "Bride makeup photoshoot in wedding.",
-              },
-            ]
+                {
+                  id: "1",
+                  src: modeling5,
+                  overline: "Modeling",
+                  title: "Prerna Shrestha",
+                  caption:
+                    "Executive image captured with continuous ring lights.",
+                },
+                {
+                  id: "2",
+                  src: black,
+                  overline: "Creative Photoshoot",
+                  title: "Rohan Adhikari",
+                  caption: "Black and White Photoshoot.",
+                },
+                {
+                  id: "3",
+                  src: birthday,
+                  overline: "Birthday",
+                  title: "Ananya Gautam",
+                  caption: "Happy Birthday Cutie.",
+                },
+                {
+                  id: "4",
+                  src: bride2,
+                  overline: "Creative Lighting",
+                  title: "Tenzing Lama",
+                  caption: "Bride makeup photoshoot in wedding.",
+                },
+              ]
           ).map((item) => (
             <Box
               key={item.id}
@@ -614,7 +638,6 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
                 >
                   {item.title}
                 </Typography>
-
               </Box>
             </Box>
           ))}
@@ -647,25 +670,35 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
         </Box>
       </Container>
 
-
-
       {/* Explore Portfolios by Category Showcase Section */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-20px" }}
-        transition={{ duration: 0.5, delay: index * 0.05, ease: [0.2, 0.8, 0.2, 1] }}
+        transition={{
+          duration: 0.5,
+          delay: index * 0.05,
+          ease: [0.2, 0.8, 0.2, 1],
+        }}
         style={{ height: "100%" }}
       >
-        <Box sx={{ mt: { xs: 10, md: 10 }, borderTop: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', pt: { xs: 4, md: 4 } }} id="hero-quick-portfolio-redirects">
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Box
+          sx={{
+            mt: { xs: 10, md: 10 },
+            borderTop: "1px solid",
+            borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+            pt: { xs: 4, md: 4 },
+          }}
+          id="hero-quick-portfolio-redirects"
+        >
+          <Box sx={{ textAlign: "center", mb: 6 }}>
             <Typography
               variant="overline"
               sx={{
-                color: '#E50914',
+                color: "#E50914",
                 fontWeight: 600,
-                letterSpacing: '0.15em',
-                display: 'block',
+                letterSpacing: "0.15em",
+                display: "block",
                 mb: 1.5,
                 fontFamily: '"Space Grotesk", sans-serif',
               }}
@@ -677,9 +710,9 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
               sx={{
                 fontFamily: '"Space Grotesk", sans-serif',
                 fontWeight: 700,
-                fontSize: { xs: '1.75rem', md: '2.5rem' },
+                fontSize: { xs: "1.75rem", md: "2.5rem" },
                 mb: 2,
-                color: 'text.primary',
+                color: "text.primary",
               }}
             >
               Explore Portfolios by Specialty
@@ -687,116 +720,121 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
             <Typography
               variant="body1"
               sx={{
-                color: 'text.secondary',
-                fontSize: { xs: '0.95rem', md: '1.05rem' },
-                maxWidth: '600px',
-                mx: 'auto',
+                color: "text.secondary",
+                fontSize: { xs: "0.95rem", md: "1.05rem" },
+                maxWidth: "600px",
+                mx: "auto",
                 fontWeight: 300,
               }}
             >
-              Instantly drill down into our custom-captured galleries. Filter by your targeted style to check our high-fidelity output.
+              Instantly drill down into our custom-captured galleries. Filter by
+              your targeted style to check our high-fidelity output.
             </Typography>
           </Box>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                id: 'wedding',
-                category: 'Wedding',
+                id: "wedding",
+                category: "Wedding",
                 img: wedding,
-                alt: 'Cinematic Weddings Portfolio',
-                eyebrow: 'CINEMATIC WEDDINGS',
-                title: 'Traditional Couples',
-                cta: 'View Wedding Portfolio',
+                alt: "Cinematic Weddings Portfolio",
+                eyebrow: "CINEMATIC WEDDINGS",
+                title: "Traditional Couples",
+                cta: "View Wedding Portfolio",
               },
               {
-                id: 'portrait',
-                category: 'Portrait',
+                id: "portrait",
+                category: "Portrait",
                 img: portrait,
-                alt: 'Executive Portraits Portfolio',
-                eyebrow: 'EXECUTIVE PORTRAITS',
-                title: 'Professional Headshots',
-                cta: 'View Portrait Portfolio',
+                alt: "Executive Portraits Portfolio",
+                eyebrow: "EXECUTIVE PORTRAITS",
+                title: "Professional Headshots",
+                cta: "View Portrait Portfolio",
               },
               {
-                id: 'visa',
-                category: 'Visa',
+                id: "visa",
+                category: "Visa",
                 img: visa,
-                alt: 'Visa & Biometrics Portfolio',
-                eyebrow: 'VISA & BIOMETRICS',
-                title: 'Official Embassy Photos',
-                cta: 'View Biometric Portfolio',
+                alt: "Visa & Biometrics Portfolio",
+                eyebrow: "VISA & BIOMETRICS",
+                title: "Official Embassy Photos",
+                cta: "View Biometric Portfolio",
               },
               {
-                id: 'framing',
-                category: 'Photo Frame',
+                id: "framing",
+                category: "Photo Frame",
                 img: photoFrame,
-                alt: 'Custom Framing Portfolio',
-                eyebrow: 'CUSTOM FRAMING',
-                title: 'Handcrafted Wood Frames',
-                cta: 'View Framing Portfolio',
+                alt: "Custom Framing Portfolio",
+                eyebrow: "CUSTOM FRAMING",
+                title: "Handcrafted Wood Frames",
+                cta: "View Framing Portfolio",
               },
               {
-                id: 'studio',
-                category: 'Studio',
+                id: "studio",
+                category: "Studio",
                 img: studio,
-                eyebrow: 'STUDIO & COMMERCIAL',
-                title: 'Professional Studio Portraits',
-                cta: 'View Studio Portfolio',
+                eyebrow: "STUDIO & COMMERCIAL",
+                title: "Professional Studio Portraits",
+                cta: "View Studio Portfolio",
               },
               {
-                id: 'printing',
-                category: 'Photo Printing',
+                id: "printing",
+                category: "Photo Printing",
                 img: PhotoPrinting,
-                alt: 'Photo Printing Portfolio',
-                eyebrow: 'PHOTO PRINTING',
-                title: 'High Quality Photo Prints',
-                cta: 'View Printing Portfolio',
+                alt: "Photo Printing Portfolio",
+                eyebrow: "PHOTO PRINTING",
+                title: "High Quality Photo Prints",
+                cta: "View Printing Portfolio",
               },
               {
-                id: 'catalog',
-                category: 'Product Catalog',
+                id: "catalog",
+                category: "Product Catalog",
                 img: Product,
-                alt: 'Product Catalog Portfolio',
-                eyebrow: 'PRODUCT CATALOG',
-                title: 'High Quality Product Advertisement',
-                cta: 'View Product Catalog',
+                alt: "Product Catalog Portfolio",
+                eyebrow: "PRODUCT CATALOG",
+                title: "High Quality Product Advertisement",
+                cta: "View Product Catalog",
               },
               {
-                id: 'events',
-                category: 'Events',
+                id: "events",
+                category: "Events",
                 img: events,
-                alt: 'Events Photoshoot Portfolio',
-                eyebrow: 'EVENTS',
-                title: 'Events Photoshoot',
-                cta: 'View Events Portfolio',
+                alt: "Events Photoshoot Portfolio",
+                eyebrow: "EVENTS",
+                title: "Events Photoshoot",
+                cta: "View Events Portfolio",
               },
             ].map((card) => (
               <motion.div
                 key={card.id}
                 whileHover={{ y: -6 }}
-                transition={{ type: 'spring', stiffness: 300 }}
+                transition={{ type: "spring", stiffness: 300 }}
                 id={`category-card-${card.id}`}
               >
                 <Box
                   className="portfolio-card"
                   sx={{
-                    position: 'relative',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    aspectRatio: '4/3',
-                    cursor: 'pointer',
-                    border: '1px solid',
-                    borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-                    boxShadow: isDark ? '0 10px 30px rgba(0,0,0,0.4)' : '0 10px 20px rgba(0,0,0,0.04)',
-                    '&:hover .portfolio-card-img': {
-                      transform: 'scale(1.08)',
+                    position: "relative",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    aspectRatio: "4/3",
+                    cursor: "pointer",
+                    border: "1px solid",
+                    borderColor: isDark
+                      ? "rgba(255,255,255,0.08)"
+                      : "rgba(0,0,0,0.08)",
+                    boxShadow: isDark
+                      ? "0 10px 30px rgba(0,0,0,0.4)"
+                      : "0 10px 20px rgba(0,0,0,0.04)",
+                    "&:hover .portfolio-card-img": {
+                      transform: "scale(1.08)",
                     },
-                    '&:hover .portfolio-card-rule': {
-                      width: '32px',
+                    "&:hover .portfolio-card-rule": {
+                      width: "32px",
                     },
-                    '&:hover .portfolio-card-cta-arrow': {
-                      transform: 'translateX(4px)',
+                    "&:hover .portfolio-card-cta-arrow": {
+                      transform: "translateX(4px)",
                     },
                   }}
                   onClick={() => handleCategoryRedirect(card.category)}
@@ -809,49 +847,56 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
                     loading="lazy"
                     referrerPolicy="no-referrer"
                     sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      display: 'block',
-                      transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
-                      transform: 'scale(1)',
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                      transition:
+                        "transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)",
+                      transform: "scale(1)",
                     }}
                   />
                   <Box
                     sx={{
-                      position: 'absolute',
+                      position: "absolute",
                       inset: 0,
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0) 80%)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-end',
+                      background:
+                        "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0) 80%)",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "flex-end",
                       p: 3,
                     }}
                   >
                     <Box
                       className="portfolio-card-rule"
                       sx={{
-                        width: '16px',
-                        height: '2px',
-                        backgroundColor: '#ff4d4d',
+                        width: "16px",
+                        height: "2px",
+                        backgroundColor: "#ff4d4d",
                         mb: 1,
-                        transition: 'width 0.35s ease',
+                        transition: "width 0.35s ease",
                       }}
                     />
                     <Typography
                       variant="caption"
-                      sx={{ color: '#ff4d4d', fontWeight: 600, mb: 0.5, letterSpacing: '0.05em' }}
+                      sx={{
+                        color: "#ff4d4d",
+                        fontWeight: 600,
+                        mb: 0.5,
+                        letterSpacing: "0.05em",
+                      }}
                     >
                       {card.eyebrow}
                     </Typography>
                     <Typography
                       variant="h6"
                       sx={{
-                        color: '#ffffff',
+                        color: "#ffffff",
                         fontWeight: 700,
                         mb: 1,
                         fontFamily: '"Space Grotesk", sans-serif',
-                        fontSize: '1.05rem',
+                        fontSize: "1.05rem",
                       }}
                     >
                       {card.title}
@@ -859,18 +904,27 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
                     <Button
                       variant="text"
                       sx={{
-                        color: '#ffffff',
+                        color: "#ffffff",
                         p: 0,
-                        minWidth: 'auto',
-                        justifyContent: 'flex-start',
-                        fontSize: '0.8rem',
-                        textTransform: 'none',
+                        minWidth: "auto",
+                        justifyContent: "flex-start",
+                        fontSize: "0.8rem",
+                        textTransform: "none",
                         fontFamily: '"Space Grotesk", sans-serif',
-                        '&:hover': { color: '#ff4d4d', backgroundColor: 'transparent' },
+                        "&:hover": {
+                          color: "#ff4d4d",
+                          backgroundColor: "transparent",
+                        },
                       }}
                     >
-                      {card.cta}{' '}
-                      <span className="portfolio-card-cta-arrow" style={{ display: 'inline-block', transition: 'transform 0.25s ease' }}>
+                      {card.cta}{" "}
+                      <span
+                        className="portfolio-card-cta-arrow"
+                        style={{
+                          display: "inline-block",
+                          transition: "transform 0.25s ease",
+                        }}
+                      >
                         →
                       </span>
                     </Button>
@@ -911,12 +965,17 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
               fontWeight: 300,
             }}
           >
-            Explore our beautifully crafted physical products and preservation services, creating timeless keepsakes for your memories.
+            Explore our beautifully crafted physical products and preservation
+            services, creating timeless keepsakes for your memories.
           </Typography>
-          <Box sx={{ bgcolor: COLORS.paper, py: { xs: 6, md: 8 }, px: { xs: 2, md: 3 } }}>
+          <Box
+            sx={{
+              bgcolor: COLORS.paper,
+              py: { xs: 6, md: 8 },
+              px: { xs: 2, md: 3 },
+            }}
+          >
             <Box sx={{ maxWidth: 1180, mx: "auto" }}>
-
-
               <Box
                 sx={{
                   display: "grid",
@@ -935,7 +994,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
                     key={item.title}
                     item={item}
                     index={index}
-                    onClick={() => { }}
+                    onClick={() => {}}
                   />
                 ))}
               </Box>
