@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Container,
@@ -54,6 +54,7 @@ import {
   OfferAd,
   TutorialVideo,
   LearningArticle,
+  HeroImg,
 } from "../types";
 
 interface AdminPanelProps {
@@ -88,7 +89,9 @@ export default function AdminPanel({
   });
 
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [activeVideoModalType, setActiveVideoModalType] = useState<"youtube" | "facebook" | "tiktok">("youtube");
+  const [activeVideoModalType, setActiveVideoModalType] = useState<
+    "youtube" | "facebook" | "tiktok"
+  >("youtube");
   const [videoForm, setVideoForm] = useState({
     title: "",
     youtubeUrlOrId: "",
@@ -132,8 +135,14 @@ export default function AdminPanel({
   const [learningArticles, setLearningArticles] = useState<LearningArticle[]>(
     [],
   );
+
+  const [heroImage, setHeroImage] = useState<HeroImg | null>(null);
+  const [heroImages, setHeroImages] = useState<HeroImg[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Tutorials/Articles Forms State
   const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
@@ -169,6 +178,7 @@ export default function AdminPanel({
       const fetchedOffers = await apiService.getOffers();
       const fetchedTutorialVideos = await apiService.getTutorialVideos();
       const fetchedLearningArticles = await apiService.getLearningArticles();
+      const fetchedHeroImages = await apiService.getHeroImages();
 
       setPortfolios(fetchedPortfolios);
       setVideos(fetchedVideos);
@@ -176,6 +186,8 @@ export default function AdminPanel({
       setOffers(fetchedOffers);
       setTutorialVideos(fetchedTutorialVideos);
       setLearningArticles(fetchedLearningArticles);
+      setHeroImage(fetchedHeroImages.length > 0 ? fetchedHeroImages[0] : null);
+      setHeroImages(fetchedHeroImages);
     } catch (err: any) {
       console.error("Error fetching admin dataset:", err);
     } finally {
@@ -325,8 +337,15 @@ export default function AdminPanel({
       return;
     }
 
-    if (!videoForm.youtubeUrlOrId && !(videoForm as any).facebookLink && !(videoForm as any).tiktokLink) {
-      triggerAlert("error", "Please provide at least one link (YouTube, Facebook, or TikTok).");
+    if (
+      !videoForm.youtubeUrlOrId &&
+      !(videoForm as any).facebookLink &&
+      !(videoForm as any).tiktokLink
+    ) {
+      triggerAlert(
+        "error",
+        "Please provide at least one link (YouTube, Facebook, or TikTok).",
+      );
       return;
     }
 
@@ -675,6 +694,73 @@ export default function AdminPanel({
       return;
     }
 
+    const fetchHeroImage = async () => {
+      setLoading(true);
+      try {
+        const images = await apiService.getHeroImages();
+        setHeroImage(images.length > 0 ? images[0] : null);
+      } catch (err) {
+        console.error("Error fetching hero images:", err);
+        setError("Failed to load hero image.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      fetchHeroImage();
+    }, []);
+
+    const handleUploadClick = () => {
+      fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (
+      event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      setUploading(true);
+      setError(null);
+
+      try {
+        // Replace the existing image. First, delete the old one if it exists.
+        if (heroImage) {
+          await apiService.deleteHeroImage(heroImage.id);
+        }
+        const imageUrl = await apiService.uploadImage(file);
+        await apiService.saveHeroImage({ imageUrl });
+        await fetchHeroImage(); // Refetch to show the new image
+      } catch (err: any) {
+        console.error("Upload failed:", err);
+        setError(err.message || "An error occurred during upload.");
+      } finally {
+        setUploading(false);
+        // Reset file input
+        if (event.target) {
+          event.target.value = "";
+        }
+      }
+    };
+
+    const handleDelete = async () => {
+      if (!heroImage) return;
+
+      setUploading(true); // Use uploading state to disable buttons
+      setError(null);
+
+      try {
+        await apiService.deleteHeroImage(heroImage.id);
+        setHeroImage(null);
+      } catch (err: any) {
+        console.error("Delete failed:", err);
+        setError(err.message || "An error occurred during deletion.");
+      } finally {
+        setUploading(false);
+      }
+    };
+
     try {
       await apiService.saveTutorialVideo({
         id: editingTutorialId || undefined,
@@ -833,6 +919,61 @@ export default function AdminPanel({
     }
   };
 
+  const handleHeroImageUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleHeroImageFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      const imageUrl = await apiService.uploadImage(file);
+      await apiService.saveHeroImage({ imageUrl });
+      const images = await apiService.getHeroImages();
+      setHeroImages(images);
+      setHeroImage(images.length > 0 ? images[0] : null);
+      if (onDataChange) onDataChange();
+      triggerAlert("success", "Hero image updated successfully!");
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+      setError(err.message || "An error occurred during upload.");
+      triggerAlert("error", err.message || "An error occurred during upload.");
+    } finally {
+      setUploading(false);
+      if (event.target) {
+        event.target.value = "";
+      }
+    }
+  };
+
+  const handleHeroImageDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this home image?")) return;
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      await apiService.deleteHeroImage(id);
+      const images = await apiService.getHeroImages();
+      setHeroImages(images);
+      setHeroImage(images.length > 0 ? images[0] : null);
+      if (onDataChange) onDataChange();
+      triggerAlert("success", "Hero image deleted successfully.");
+    } catch (err: any) {
+      console.error("Delete failed:", err);
+      setError(err.message || "An error occurred during deletion.");
+      triggerAlert("error", err.message || "An error occurred during deletion.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -946,6 +1087,12 @@ export default function AdminPanel({
           >
             <Tab
               icon={<ImageIcon size={18} />}
+              label="Manage Home Image"
+              iconPosition="start"
+            />
+
+            <Tab
+              icon={<ImageIcon size={18} />}
               label="Manage Portfolio Artworks"
               iconPosition="start"
             />
@@ -977,8 +1124,71 @@ export default function AdminPanel({
           </Tabs>
         </Box>
 
-        {/* ==================================== PORTFOLIO ARTWORKS VIEW ==================================== */}
         {activeTab === 0 && (
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+                flexWrap: "wrap",
+                gap: 1.5,
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 600,
+                }}
+              >
+                Manage Home Image
+              </Typography>
+            </Box>
+            <Card sx={{ background: "#121214", border: "1px solid rgba(255,255,255,0.06)", p: 4, textAlign: "center" }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+                <Button variant="contained" onClick={handleHeroImageUploadClick} startIcon={<Upload size={18} />} sx={{ backgroundColor: "#E50914", "&:hover": { backgroundColor: "#b91c1c" } }}>
+                  Upload New Home Image
+                </Button>
+              </Box>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleHeroImageFileChange}
+              />
+              {uploading && (
+                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 4 }}>
+                  <CircularProgress sx={{ color: "#E50914", mb: 2 }} />
+                  <Typography>Uploading image...</Typography>
+                </Box>
+              )}
+              {heroImages && heroImages.length > 0 ? (
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
+                  {heroImages.map((img) => (
+                    <Box key={img.id} sx={{ position: "relative", display: "flex", flexDirection: "column", borderRadius: "8px", overflow: "hidden", border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <img src={img.imageUrl} alt="Home Hero" style={{ width: "100%", height: "250px", objectFit: "cover" }} referrerPolicy="no-referrer" />
+                      <Box sx={{ p: 2, display: "flex", justifyContent: "center", background: 'rgba(0,0,0,0.5)' }}>
+                        <Button variant="outlined" color="error" onClick={() => handleHeroImageDelete(img.id)} startIcon={<Trash2 size={16} />}>
+                          Delete Image
+                        </Button>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              ) : !uploading && (
+                <Box sx={{ py: 8 }}>
+                  <Typography sx={{ color: "rgba(255,255,255,0.6)", mb: 3 }}>No home image uploaded yet.</Typography>
+                </Box>
+              )}
+            </Card>
+          </Box>
+        )}
+
+        {/* ==================================== PORTFOLIO ARTWORKS VIEW ==================================== */}
+        {activeTab === 1 && (
           <Box>
             <Box
               sx={{
@@ -1150,7 +1360,7 @@ export default function AdminPanel({
         )}
 
         {/* ==================================== CINEMATIC VIDEOS VIEW ==================================== */}
-        {activeTab === 1 && (
+        {activeTab === 2 && (
           <Box>
             <Box
               sx={{
@@ -1171,28 +1381,59 @@ export default function AdminPanel({
               >
                 Cinematic Videos Showcase ({videos.length} videos)
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+              <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
                 <Button
                   variant="contained"
-                  onClick={() => { setActiveVideoModalType("youtube"); setIsVideoModalOpen(true); }}
+                  onClick={() => {
+                    setActiveVideoModalType("youtube");
+                    setIsVideoModalOpen(true);
+                  }}
                   startIcon={<PlusCircle size={16} />}
-                  sx={{ backgroundColor: "#E50914", fontFamily: '"Space Grotesk", sans-serif', textTransform: "none", borderRadius: "6px", fontWeight: 600, "&:hover": { backgroundColor: "#b91c1c" } }}
+                  sx={{
+                    backgroundColor: "#E50914",
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    textTransform: "none",
+                    borderRadius: "6px",
+                    fontWeight: 600,
+                    "&:hover": { backgroundColor: "#b91c1c" },
+                  }}
                 >
                   YouTube Video
                 </Button>
                 <Button
                   variant="contained"
-                  onClick={() => { setActiveVideoModalType("facebook"); setIsVideoModalOpen(true); }}
+                  onClick={() => {
+                    setActiveVideoModalType("facebook");
+                    setIsVideoModalOpen(true);
+                  }}
                   startIcon={<PlusCircle size={16} />}
-                  sx={{ backgroundColor: "#1877F2", fontFamily: '"Space Grotesk", sans-serif', textTransform: "none", borderRadius: "6px", fontWeight: 600, "&:hover": { backgroundColor: "#166FE5" } }}
+                  sx={{
+                    backgroundColor: "#1877F2",
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    textTransform: "none",
+                    borderRadius: "6px",
+                    fontWeight: 600,
+                    "&:hover": { backgroundColor: "#166FE5" },
+                  }}
                 >
                   Facebook Video
                 </Button>
                 <Button
                   variant="contained"
-                  onClick={() => { setActiveVideoModalType("tiktok"); setIsVideoModalOpen(true); }}
+                  onClick={() => {
+                    setActiveVideoModalType("tiktok");
+                    setIsVideoModalOpen(true);
+                  }}
                   startIcon={<PlusCircle size={16} />}
-                  sx={{ backgroundColor: "#000000", border: '1px solid rgba(255,255,255,0.2)', fontFamily: '"Space Grotesk", sans-serif', textTransform: "none", borderRadius: "6px", fontWeight: 600, "&:hover": { backgroundColor: "#111111" } }}
+                  sx={{
+                    backgroundColor: "#000000",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    fontFamily: '"Space Grotesk", sans-serif',
+                    textTransform: "none",
+                    borderRadius: "6px",
+                    fontWeight: 600,
+                    "&:hover": { backgroundColor: "#111111" },
+                  }}
                 >
                   TikTok Video
                 </Button>
@@ -1252,8 +1493,32 @@ export default function AdminPanel({
                             }}
                           />
                         ) : (
-                          <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: (vid as any).facebookLink ? "#1877F2" : (vid as any).tiktokLink ? "#000000" : "#222", border: (vid as any).tiktokLink ? "1px solid #333" : "none" }}>
-                            <VideoIcon size={32} color={(vid as any).facebookLink || (vid as any).tiktokLink ? "#ffffff" : "rgba(255,255,255,0.3)"} />
+                          <Box
+                            sx={{
+                              width: "100%",
+                              height: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: (vid as any).facebookLink
+                                ? "#1877F2"
+                                : (vid as any).tiktokLink
+                                  ? "#000000"
+                                  : "#222",
+                              border: (vid as any).tiktokLink
+                                ? "1px solid #333"
+                                : "none",
+                            }}
+                          >
+                            <VideoIcon
+                              size={32}
+                              color={
+                                (vid as any).facebookLink ||
+                                  (vid as any).tiktokLink
+                                  ? "#ffffff"
+                                  : "rgba(255,255,255,0.3)"
+                              }
+                            />
                           </Box>
                         )}
                         <Box sx={{ position: "absolute", top: 8, left: 8 }}>
@@ -1354,8 +1619,8 @@ export default function AdminPanel({
                               vid.youtubeId
                                 ? `https://www.youtube.com/watch?v=${vid.youtubeId}`
                                 : (vid as any).facebookLink
-                                ? (vid as any).facebookLink
-                                : (vid as any).tiktokLink
+                                  ? (vid as any).facebookLink
+                                  : (vid as any).tiktokLink
                             }
                             target="_blank"
                             sx={{
@@ -1388,7 +1653,7 @@ export default function AdminPanel({
         )}
 
         {/* ==================================== STUDIO SERVICES VIEW ==================================== */}
-        {activeTab === 2 && (
+        {activeTab === 3 && (
           <Box>
             <Box
               sx={{
@@ -1664,7 +1929,7 @@ export default function AdminPanel({
         )}
 
         {/* ==================================== PROMO OFFERS & ADS VIEW ==================================== */}
-        {activeTab === 3 && (
+        {activeTab === 4 && (
           <Box>
             <Box
               sx={{
@@ -1937,7 +2202,7 @@ export default function AdminPanel({
         )}
 
         {/* ==================================== TUTORIAL VIDEOS VIEW ==================================== */}
-        {activeTab === 4 && (
+        {activeTab === 5 && (
           <Box>
             <Box
               sx={{
@@ -2028,8 +2293,32 @@ export default function AdminPanel({
                             }}
                           />
                         ) : (
-                          <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: (vid as any).facebookLink ? "#1877F2" : (vid as any).tiktokLink ? "#000000" : "#222", border: (vid as any).tiktokLink ? "1px solid #333" : "none" }}>
-                            <VideoIcon size={32} color={(vid as any).facebookLink || (vid as any).tiktokLink ? "#ffffff" : "rgba(255,255,255,0.3)"} />
+                          <Box
+                            sx={{
+                              width: "100%",
+                              height: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: (vid as any).facebookLink
+                                ? "#1877F2"
+                                : (vid as any).tiktokLink
+                                  ? "#000000"
+                                  : "#222",
+                              border: (vid as any).tiktokLink
+                                ? "1px solid #333"
+                                : "none",
+                            }}
+                          >
+                            <VideoIcon
+                              size={32}
+                              color={
+                                (vid as any).facebookLink ||
+                                  (vid as any).tiktokLink
+                                  ? "#ffffff"
+                                  : "rgba(255,255,255,0.3)"
+                              }
+                            />
                           </Box>
                         )}
                         <Box sx={{ position: "absolute", top: 8, left: 8 }}>
@@ -2163,7 +2452,7 @@ export default function AdminPanel({
         )}
 
         {/* ==================================== LEARNING ARTICLES VIEW ==================================== */}
-        {activeTab === 5 && (
+        {activeTab === 6 && (
           <Box>
             <Box
               sx={{
@@ -2722,7 +3011,13 @@ export default function AdminPanel({
                 fontWeight: 700,
               }}
             >
-              Insert New {activeVideoModalType === 'youtube' ? 'YouTube' : activeVideoModalType === 'facebook' ? 'Facebook' : 'TikTok'} Video
+              Insert New{" "}
+              {activeVideoModalType === "youtube"
+                ? "YouTube"
+                : activeVideoModalType === "facebook"
+                  ? "Facebook"
+                  : "TikTok"}{" "}
+              Video
             </DialogTitle>
             <DialogContent sx={{ p: 4 }}>
               <TextField
@@ -2763,18 +3058,40 @@ export default function AdminPanel({
                   }
                   helperText="Fully supports full watch URLs, sharing links, embed sequences, or pure IDs."
                   slotProps={{
-                    inputLabel: { style: { color: "rgba(255, 255, 255, 0.6)", fontFamily: '"Space Grotesk"' } },
-                    formHelperText: { style: { color: "rgba(255,255,255,0.4)", fontSize: "0.72rem" } },
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
+                    formHelperText: {
+                      style: {
+                        color: "rgba(255,255,255,0.4)",
+                        fontSize: "0.72rem",
+                      },
+                    },
                     input: {
                       style: { color: "#ffffff" },
                       startAdornment: (
-                        <IconButton size="small" edge="start" sx={{ color: "rgba(255,255,255,0.4)" }}>
+                        <IconButton
+                          size="small"
+                          edge="start"
+                          sx={{ color: "rgba(255,255,255,0.4)" }}
+                        >
                           <VideoIcon size={14} />
                         </IconButton>
                       ),
                     },
                   }}
-                  sx={{ "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" }, "&:hover fieldset": { borderColor: "#E50914" }, "&.Mui-focused fieldset": { borderColor: "#E50914" } } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
                 />
               )}
 
@@ -2786,12 +3103,27 @@ export default function AdminPanel({
                   margin="normal"
                   required
                   value={(videoForm as any).facebookLink || ""}
-                  onChange={(e) => handleVideoFormChange("facebookLink", e.target.value)}
+                  onChange={(e) =>
+                    handleVideoFormChange("facebookLink", e.target.value)
+                  }
                   slotProps={{
-                    inputLabel: { style: { color: "rgba(255, 255, 255, 0.6)", fontFamily: '"Space Grotesk"' } },
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
                     input: { style: { color: "#ffffff" } },
                   }}
-                  sx={{ "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" }, "&:hover fieldset": { borderColor: "#E50914" }, "&.Mui-focused fieldset": { borderColor: "#E50914" } } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
                 />
               )}
 
@@ -2803,12 +3135,27 @@ export default function AdminPanel({
                   margin="normal"
                   required
                   value={(videoForm as any).tiktokLink || ""}
-                  onChange={(e) => handleVideoFormChange("tiktokLink", e.target.value)}
+                  onChange={(e) =>
+                    handleVideoFormChange("tiktokLink", e.target.value)
+                  }
                   slotProps={{
-                    inputLabel: { style: { color: "rgba(255, 255, 255, 0.6)", fontFamily: '"Space Grotesk"' } },
+                    inputLabel: {
+                      style: {
+                        color: "rgba(255, 255, 255, 0.6)",
+                        fontFamily: '"Space Grotesk"',
+                      },
+                    },
                     input: { style: { color: "#ffffff" } },
                   }}
-                  sx={{ "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" }, "&:hover fieldset": { borderColor: "#E50914" }, "&.Mui-focused fieldset": { borderColor: "#E50914" } } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "rgba(255, 255, 255, 0.12)",
+                      },
+                      "&:hover fieldset": { borderColor: "#E50914" },
+                      "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                    },
+                  }}
                 />
               )}
 

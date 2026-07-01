@@ -4,7 +4,15 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { PortfolioItem, VideoItem, StudioService, OfferAd, TutorialVideo, LearningArticle } from "../types";
+import {
+  PortfolioItem,
+  VideoItem,
+  StudioService,
+  OfferAd,
+  TutorialVideo,
+  LearningArticle,
+  HeroImg,
+} from "../types";
 import { STUDIO_VIDEOS } from "../data/StudioVideos";
 import { PORTFOLIO_ITEMS } from "../data/portfolioItems";
 import { DEFAULT_OFFERS, STUDIO_SERVICES } from "../data";
@@ -28,43 +36,46 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-
 const DEFAULT_TUTORIAL_VIDEOS: TutorialVideo[] = [
   {
-    id: 'tv1',
-    title: 'How to Align & Capture Biometric Passport Photos at Home',
-    youtubeId: '9vY7XfNl8C0',
-    category: 'Biometrics',
-    duration: '8:45',
-    description: 'Learn the core guidelines for white backgrounds, facial ratios, shadow elimination, and clothing choices required for official passport photos.',
-    publishedAt: '2026-06-20'
+    id: "tv1",
+    title: "How to Align & Capture Biometric Passport Photos at Home",
+    youtubeId: "9vY7XfNl8C0",
+    category: "Biometrics",
+    duration: "8:45",
+    description:
+      "Learn the core guidelines for white backgrounds, facial ratios, shadow elimination, and clothing choices required for official passport photos.",
+    publishedAt: "2026-06-20",
   },
   {
-    id: 'tv2',
-    title: 'Posing Masterclass: 5 Poses for Executive Corporate Portraits',
-    youtubeId: 'fJv8O9V96Yw',
-    category: 'Posing',
-    duration: '12:30',
-    description: 'Perfect your posture, head tilt, and shoulder angle for business headshots. Helpful guidelines for professionals and individuals.',
-    publishedAt: '2026-06-18'
+    id: "tv2",
+    title: "Posing Masterclass: 5 Poses for Executive Corporate Portraits",
+    youtubeId: "fJv8O9V96Yw",
+    category: "Posing",
+    duration: "12:30",
+    description:
+      "Perfect your posture, head tilt, and shoulder angle for business headshots. Helpful guidelines for professionals and individuals.",
+    publishedAt: "2026-06-18",
   },
   {
-    id: 'tv3',
-    title: 'Choosing the Right Photo Frame: Teak Wood vs Composite Glass',
-    youtubeId: 'OndV_GszBvs',
-    category: 'Framing',
-    duration: '6:15',
-    description: 'A deep dive into framing materials, UV protection glass, and selecting backing board mounts to preserve prints and portraits forever.',
-    publishedAt: '2026-06-10'
-  }
+    id: "tv3",
+    title: "Choosing the Right Photo Frame: Teak Wood vs Composite Glass",
+    youtubeId: "OndV_GszBvs",
+    category: "Framing",
+    duration: "6:15",
+    description:
+      "A deep dive into framing materials, UV protection glass, and selecting backing board mounts to preserve prints and portraits forever.",
+    publishedAt: "2026-06-10",
+  },
 ];
 
 const DEFAULT_LEARNING_ARTICLES: LearningArticle[] = [
   {
-    id: 'la1',
-    title: '5 Common Mistakes to Avoid in US Visa & DV Lottery Photos',
-    category: 'Biometrics',
-    excerpt: 'An essential checklist detailing background specs, expression rules, and resolution requirements for US State Department submittals.',
+    id: "la1",
+    title: "5 Common Mistakes to Avoid in US Visa & DV Lottery Photos",
+    category: "Biometrics",
+    excerpt:
+      "An essential checklist detailing background specs, expression rules, and resolution requirements for US State Department submittals.",
     content: `When submitting photos for the US Visa or Diversity Visa (DV) Lottery, even a minor mistake can lead to an immediate rejection. Here are the 5 most common errors we see and how to avoid them:
 
 ### 1. Wearing Eyeglasses
@@ -81,16 +92,18 @@ Since the background must be white or off-white, avoid wearing white or light cr
 
 ### 5. Non-neutral Facial Expressions
 No smiling, showing teeth, squinting, or frowning. Maintain a neutral expression with both eyes open, looking directly at the camera.`,
-    readTime: '4 mins read',
-    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600',
-    publishedAt: '2026-06-22',
-    author: 'Rohan Adhikari (Biometrics Lead)'
+    readTime: "4 mins read",
+    imageUrl:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600",
+    publishedAt: "2026-06-22",
+    author: "Rohan Adhikari (Biometrics Lead)",
   },
   {
-    id: 'la2',
-    title: 'Preparing for Your Executive Portrait: The Styling Guide',
-    category: 'Posing',
-    excerpt: 'Dress for authority. Discover the best colors, fabrics, and styling practices to ensure your professional business profile looks outstanding.',
+    id: "la2",
+    title: "Preparing for Your Executive Portrait: The Styling Guide",
+    category: "Posing",
+    excerpt:
+      "Dress for authority. Discover the best colors, fabrics, and styling practices to ensure your professional business profile looks outstanding.",
     content: `Your corporate headshot is often your first impression on clients, investors, and recruiters. Here is how to style yourself for a commanding, professional presence:
 
 ### 1. Color Selections
@@ -110,11 +123,12 @@ Keep accessories minimal. Sleek watches, elegant studs, or a simple tie clip are
 - **Hydration**: Drink plenty of water the night before to ensure healthy skin.
 - **Matte Finishes**: Use light translucent powder to prevent shine under strong studio strobe lights.
 - **Hair**: Style hair in your normal day-to-day fashion. Avoid major haircut changes right before the shoot.`,
-    readTime: '6 mins read',
-    imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=600',
-    publishedAt: '2026-06-19',
-    author: 'Prerna Shrestha (Lead Portraitist)'
-  }
+    readTime: "6 mins read",
+    imageUrl:
+      "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=600",
+    publishedAt: "2026-06-19",
+    author: "Prerna Shrestha (Lead Portraitist)",
+  },
 ];
 
 /**
@@ -125,9 +139,11 @@ Keep accessories minimal. Sleek watches, elegant studs, or a simple tie clip are
 const STORAGE_PORTFOLIO_KEY = "kathmandu_studio_portfolio";
 const STORAGE_VIDEOS_KEY = "kathmandu_studio_videos";
 const STORAGE_SERVICES_KEY = "kathmandu_studio_services";
-const STORAGE_OFFERS_KEY = 'kathmandu_studio_offers';
-const STORAGE_TUTORIALS_KEY = 'kathmandu_studio_tutorials';
-const STORAGE_ARTICLES_KEY = 'kathmandu_studio_articles';
+const STORAGE_OFFERS_KEY = "kathmandu_studio_offers";
+const STORAGE_TUTORIALS_KEY = "kathmandu_studio_tutorials";
+const STORAGE_ARTICLES_KEY = "kathmandu_studio_articles";
+const STORAGE_HOME_KEY = "home_image";
+const STORAGE_HERO_IMAGE_KEY = "studio_hero_image";
 
 const initializeMockDatabaseIfNeeded = () => {
   if (!localStorage.getItem(STORAGE_PORTFOLIO_KEY)) {
@@ -146,10 +162,22 @@ const initializeMockDatabaseIfNeeded = () => {
     localStorage.setItem(STORAGE_OFFERS_KEY, JSON.stringify(DEFAULT_OFFERS));
   }
   if (!localStorage.getItem(STORAGE_TUTORIALS_KEY)) {
-    localStorage.setItem(STORAGE_TUTORIALS_KEY, JSON.stringify(DEFAULT_TUTORIAL_VIDEOS));
+    localStorage.setItem(
+      STORAGE_TUTORIALS_KEY,
+      JSON.stringify(DEFAULT_TUTORIAL_VIDEOS),
+    );
   }
   if (!localStorage.getItem(STORAGE_ARTICLES_KEY)) {
-    localStorage.setItem(STORAGE_ARTICLES_KEY, JSON.stringify(DEFAULT_LEARNING_ARTICLES));
+    localStorage.setItem(
+      STORAGE_ARTICLES_KEY,
+      JSON.stringify(DEFAULT_LEARNING_ARTICLES),
+    );
+  }
+  if (!localStorage.getItem(STORAGE_HERO_IMAGE_KEY)) {
+    localStorage.setItem(
+      STORAGE_HERO_IMAGE_KEY,
+      JSON.stringify([{ id: "default", imageUrl: "" }]), // Default is handled in component
+    );
   }
 };
 
@@ -383,14 +411,14 @@ export const apiService = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
-          .from('services')
-          .select('*')
-          .order('id', { ascending: true });
+          .from("services")
+          .select("*")
+          .order("id", { ascending: true });
         if (error) throw error;
         // Return data even if empty to prevent showing hardcoded fallbacks
         if (data) return data as StudioService[];
       } catch (err) {
-        console.warn('Supabase services fetch error:', err);
+        console.warn("Supabase services fetch error:", err);
         return [];
       }
     }
@@ -400,7 +428,9 @@ export const apiService = {
     return stored ? JSON.parse(stored) : STUDIO_SERVICES;
   },
 
-  async saveServiceItem(service: Omit<StudioService, 'id'> & { id?: string }): Promise<StudioService> {
+  async saveServiceItem(
+    service: Omit<StudioService, "id"> & { id?: string },
+  ): Promise<StudioService> {
     const newService: StudioService = {
       id: service.id || `s_${Date.now()}`,
       title: service.title,
@@ -410,27 +440,32 @@ export const apiService = {
       description: service.description,
       features: service.features || [],
       rating: service.rating ?? 5.0,
-      imageUrl: service.imageUrl
+      imageUrl: service.imageUrl,
     };
 
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
-          .from('services')
+          .from("services")
           .upsert(newService)
           .select()
           .single();
         if (error) throw error;
         if (data) return data as StudioService;
       } catch (err) {
-        console.warn('Supabase service insert/update error, falling back to localStorage:', err);
+        console.warn(
+          "Supabase service insert/update error, falling back to localStorage:",
+          err,
+        );
       }
     }
 
     // LocalStorage fallback
     const stored = localStorage.getItem(STORAGE_SERVICES_KEY);
-    const list: StudioService[] = stored ? JSON.parse(stored) : [...STUDIO_SERVICES];
-    const index = list.findIndex(x => x.id === newService.id);
+    const list: StudioService[] = stored
+      ? JSON.parse(stored)
+      : [...STUDIO_SERVICES];
+    const index = list.findIndex((x) => x.id === newService.id);
     if (index !== -1) {
       list[index] = newService;
     } else {
@@ -443,13 +478,13 @@ export const apiService = {
   async deleteServiceItem(id: string): Promise<boolean> {
     if (isSupabaseConfigured && supabase) {
       try {
-        const { error } = await supabase
-          .from('services')
-          .delete()
-          .eq('id', id);
+        const { error } = await supabase.from("services").delete().eq("id", id);
         if (error) throw error;
       } catch (err) {
-        console.warn('Supabase service delete error, falling back to localStorage:', err);
+        console.warn(
+          "Supabase service delete error, falling back to localStorage:",
+          err,
+        );
       }
     }
 
@@ -457,7 +492,7 @@ export const apiService = {
     const stored = localStorage.getItem(STORAGE_SERVICES_KEY);
     if (stored) {
       const list: StudioService[] = JSON.parse(stored);
-      const filtered = list.filter(s => s.id !== id);
+      const filtered = list.filter((s) => s.id !== id);
       localStorage.setItem(STORAGE_SERVICES_KEY, JSON.stringify(filtered));
       return true;
     }
@@ -468,14 +503,14 @@ export const apiService = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
-          .from('offers')
-          .select('*')
-          .order('id', { ascending: true });
+          .from("offers")
+          .select("*")
+          .order("id", { ascending: true });
         if (error) throw error;
         // Return data even if empty to prevent showing hardcoded fallbacks
         if (data) return data as OfferAd[];
       } catch (err) {
-        console.warn('Supabase offers fetch error:', err);
+        console.warn("Supabase offers fetch error:", err);
         return [];
       }
     }
@@ -485,7 +520,9 @@ export const apiService = {
     return stored ? JSON.parse(stored) : DEFAULT_OFFERS;
   },
 
-  async saveOfferItem(offer: Omit<OfferAd, 'id'> & { id?: string }): Promise<OfferAd> {
+  async saveOfferItem(
+    offer: Omit<OfferAd, "id"> & { id?: string },
+  ): Promise<OfferAd> {
     const newOffer: OfferAd = {
       id: offer.id || `o_${Date.now()}`,
       badge: offer.badge,
@@ -496,27 +533,30 @@ export const apiService = {
       validUntil: offer.validUntil,
       actionText: offer.actionText,
       targetCategory: offer.targetCategory,
-      accentColor: offer.accentColor || '#E50914'
+      accentColor: offer.accentColor || "#E50914",
     };
 
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
-          .from('offers')
+          .from("offers")
           .upsert(newOffer)
           .select()
           .single();
         if (error) throw error;
         if (data) return data as OfferAd;
       } catch (err) {
-        console.warn('Supabase offers insert/update error, falling back to localStorage:', err);
+        console.warn(
+          "Supabase offers insert/update error, falling back to localStorage:",
+          err,
+        );
       }
     }
 
     // LocalStorage fallback
     const stored = localStorage.getItem(STORAGE_OFFERS_KEY);
     const list: OfferAd[] = stored ? JSON.parse(stored) : [...DEFAULT_OFFERS];
-    const index = list.findIndex(x => x.id === newOffer.id);
+    const index = list.findIndex((x) => x.id === newOffer.id);
     if (index !== -1) {
       list[index] = newOffer;
     } else {
@@ -529,13 +569,13 @@ export const apiService = {
   async deleteOfferItem(id: string): Promise<boolean> {
     if (isSupabaseConfigured && supabase) {
       try {
-        const { error } = await supabase
-          .from('offers')
-          .delete()
-          .eq('id', id);
+        const { error } = await supabase.from("offers").delete().eq("id", id);
         if (error) throw error;
       } catch (err) {
-        console.warn('Supabase offer delete error, falling back to localStorage:', err);
+        console.warn(
+          "Supabase offer delete error, falling back to localStorage:",
+          err,
+        );
       }
     }
 
@@ -543,7 +583,7 @@ export const apiService = {
     const stored = localStorage.getItem(STORAGE_OFFERS_KEY);
     if (stored) {
       const list: OfferAd[] = JSON.parse(stored);
-      const filtered = list.filter(o => o.id !== id);
+      const filtered = list.filter((o) => o.id !== id);
       localStorage.setItem(STORAGE_OFFERS_KEY, JSON.stringify(filtered));
       return true;
     }
@@ -555,14 +595,14 @@ export const apiService = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
-          .from('tutorials')
-          .select('*')
-          .order('id', { ascending: false });
+          .from("tutorials")
+          .select("*")
+          .order("id", { ascending: false });
         if (error) throw error;
         // Return data even if empty to prevent showing hardcoded fallbacks
         if (data) return data as TutorialVideo[];
       } catch (err) {
-        console.warn('Supabase tutorials fetch error:', err);
+        console.warn("Supabase tutorials fetch error:", err);
         return [];
       }
     }
@@ -572,35 +612,42 @@ export const apiService = {
     return stored ? JSON.parse(stored) : DEFAULT_TUTORIAL_VIDEOS;
   },
 
-  async saveTutorialVideo(video: Omit<TutorialVideo, 'id'> & { id?: string }): Promise<TutorialVideo> {
+  async saveTutorialVideo(
+    video: Omit<TutorialVideo, "id"> & { id?: string },
+  ): Promise<TutorialVideo> {
     const newVideo: TutorialVideo = {
       id: video.id || `tv_${Date.now()}`,
       title: video.title,
       youtubeId: video.youtubeId,
       category: video.category,
-      duration: video.duration || '5:00',
+      duration: video.duration || "5:00",
       description: video.description,
-      publishedAt: video.publishedAt || new Date().toISOString().split('T')[0]
+      publishedAt: video.publishedAt || new Date().toISOString().split("T")[0],
     };
 
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
-          .from('tutorials')
+          .from("tutorials")
           .upsert(newVideo)
           .select()
           .single();
         if (error) throw error;
         if (data) return data as TutorialVideo;
       } catch (err) {
-        console.warn('Supabase tutorials insert/update error, falling back to localStorage:', err);
+        console.warn(
+          "Supabase tutorials insert/update error, falling back to localStorage:",
+          err,
+        );
       }
     }
 
     // LocalStorage fallback
     const stored = localStorage.getItem(STORAGE_TUTORIALS_KEY);
-    const list: TutorialVideo[] = stored ? JSON.parse(stored) : [...DEFAULT_TUTORIAL_VIDEOS];
-    const index = list.findIndex(x => x.id === newVideo.id);
+    const list: TutorialVideo[] = stored
+      ? JSON.parse(stored)
+      : [...DEFAULT_TUTORIAL_VIDEOS];
+    const index = list.findIndex((x) => x.id === newVideo.id);
     if (index !== -1) {
       list[index] = newVideo;
     } else {
@@ -614,12 +661,15 @@ export const apiService = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { error } = await supabase
-          .from('tutorials')
+          .from("tutorials")
           .delete()
-          .eq('id', id);
+          .eq("id", id);
         if (error) throw error;
       } catch (err) {
-        console.warn('Supabase tutorial delete error, falling back to localStorage:', err);
+        console.warn(
+          "Supabase tutorial delete error, falling back to localStorage:",
+          err,
+        );
       }
     }
 
@@ -627,7 +677,7 @@ export const apiService = {
     const stored = localStorage.getItem(STORAGE_TUTORIALS_KEY);
     if (stored) {
       const list: TutorialVideo[] = JSON.parse(stored);
-      const filtered = list.filter(v => v.id !== id);
+      const filtered = list.filter((v) => v.id !== id);
       localStorage.setItem(STORAGE_TUTORIALS_KEY, JSON.stringify(filtered));
       return true;
     }
@@ -639,14 +689,14 @@ export const apiService = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
-          .from('articles')
-          .select('*')
-          .order('id', { ascending: false });
+          .from("articles")
+          .select("*")
+          .order("id", { ascending: false });
         if (error) throw error;
         // Return data even if empty to prevent showing hardcoded fallbacks
         if (data) return data as LearningArticle[];
       } catch (err) {
-        console.warn('Supabase articles fetch error:', err);
+        console.warn("Supabase articles fetch error:", err);
         return [];
       }
     }
@@ -656,37 +706,47 @@ export const apiService = {
     return stored ? JSON.parse(stored) : DEFAULT_LEARNING_ARTICLES;
   },
 
-  async saveLearningArticle(article: Omit<LearningArticle, 'id'> & { id?: string }): Promise<LearningArticle> {
+  async saveLearningArticle(
+    article: Omit<LearningArticle, "id"> & { id?: string },
+  ): Promise<LearningArticle> {
     const newArticle: LearningArticle = {
       id: article.id || `la_${Date.now()}`,
       title: article.title,
       category: article.category,
       excerpt: article.excerpt,
       content: article.content,
-      readTime: article.readTime || '5 mins read',
-      imageUrl: article.imageUrl || 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=600',
-      publishedAt: article.publishedAt || new Date().toISOString().split('T')[0],
-      author: article.author || 'Studio Specialist'
+      readTime: article.readTime || "5 mins read",
+      imageUrl:
+        article.imageUrl ||
+        "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=600",
+      publishedAt:
+        article.publishedAt || new Date().toISOString().split("T")[0],
+      author: article.author || "Studio Specialist",
     };
 
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
-          .from('articles')
+          .from("articles")
           .upsert(newArticle)
           .select()
           .single();
         if (error) throw error;
         if (data) return data as LearningArticle;
       } catch (err) {
-        console.warn('Supabase articles insert/update error, falling back to localStorage:', err);
+        console.warn(
+          "Supabase articles insert/update error, falling back to localStorage:",
+          err,
+        );
       }
     }
 
     // LocalStorage fallback
     const stored = localStorage.getItem(STORAGE_ARTICLES_KEY);
-    const list: LearningArticle[] = stored ? JSON.parse(stored) : [...DEFAULT_LEARNING_ARTICLES];
-    const index = list.findIndex(x => x.id === newArticle.id);
+    const list: LearningArticle[] = stored
+      ? JSON.parse(stored)
+      : [...DEFAULT_LEARNING_ARTICLES];
+    const index = list.findIndex((x) => x.id === newArticle.id);
     if (index !== -1) {
       list[index] = newArticle;
     } else {
@@ -699,13 +759,13 @@ export const apiService = {
   async deleteLearningArticle(id: string): Promise<boolean> {
     if (isSupabaseConfigured && supabase) {
       try {
-        const { error } = await supabase
-          .from('articles')
-          .delete()
-          .eq('id', id);
+        const { error } = await supabase.from("articles").delete().eq("id", id);
         if (error) throw error;
       } catch (err) {
-        console.warn('Supabase article delete error, falling back to localStorage:', err);
+        console.warn(
+          "Supabase article delete error, falling back to localStorage:",
+          err,
+        );
       }
     }
 
@@ -713,12 +773,96 @@ export const apiService = {
     const stored = localStorage.getItem(STORAGE_ARTICLES_KEY);
     if (stored) {
       const list: LearningArticle[] = JSON.parse(stored);
-      const filtered = list.filter(a => a.id !== id);
+      const filtered = list.filter((a) => a.id !== id);
       localStorage.setItem(STORAGE_ARTICLES_KEY, JSON.stringify(filtered));
       return true;
     }
     return false;
-  }
+  },
+
+  // --- HERO IMAGES ---
+  async getHeroImages(): Promise<HeroImg[]> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("hero_images")
+          .select("*")
+          .order("createdAt", { ascending: false });
+        if (error) throw error;
+        if (data) return data as HeroImg[];
+      } catch (err) {
+        console.warn("Supabase hero images fetch error:", err);
+        return [];
+      }
+    }
+
+    // Fallback to localStorage
+    const stored = localStorage.getItem(STORAGE_HERO_IMAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  },
+
+  async saveHeroImage(
+    image: Omit<HeroImg, "id"> & { id?: string },
+  ): Promise<HeroImg> {
+    const newImage: HeroImg = {
+      id: image.id || `hero_${Date.now()}`,
+      imageUrl: image.imageUrl,
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("hero_images")
+          .upsert(newImage)
+          .select()
+          .single();
+        if (error) throw error;
+        if (data) return data as HeroImg;
+      } catch (err) {
+        console.warn(
+          "Supabase hero image insert/update error, falling back to localStorage:",
+          err,
+        );
+      }
+    }
+
+    // LocalStorage fallback
+    const stored = localStorage.getItem(STORAGE_HERO_IMAGE_KEY);
+    const list: HeroImg[] = stored ? JSON.parse(stored) : [];
+    const index = list.findIndex((x) => x.id === newImage.id);
+    if (index !== -1) {
+      list[index] = newImage;
+    } else {
+      list.unshift(newImage);
+    }
+    localStorage.setItem(STORAGE_HERO_IMAGE_KEY, JSON.stringify(list));
+    return newImage;
+  },
+
+  async deleteHeroImage(id: string): Promise<boolean> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase
+          .from("hero_images")
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+      } catch (err) {
+        console.warn(
+          "Supabase hero image delete error, falling back to localStorage:",
+          err,
+        );
+      }
+    }
+
+    // LocalStorage fallback
+    const stored = localStorage.getItem(STORAGE_HERO_IMAGE_KEY);
+    if (stored) {
+      const list: HeroImg[] = JSON.parse(stored);
+      const filtered = list.filter((img) => img.id !== id);
+      localStorage.setItem(STORAGE_HERO_IMAGE_KEY, JSON.stringify(filtered));
+      return true;
+    }
+    return false;
+  },
 };
-
-

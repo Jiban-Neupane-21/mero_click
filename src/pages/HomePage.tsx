@@ -10,7 +10,8 @@ import { motion } from "motion/react";
 
 
 import { useNavigate } from 'react-router-dom';
-
+import { apiService } from "../utils/supabase";
+import { PortfolioItem } from "../types";
 
 
 import modeling5 from "../assets/Gallery/Modeling 5.jpg";
@@ -36,6 +37,23 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
   const mode = theme.palette.mode;
   const isDark = theme.palette.mode === "dark";
   const navigate = useNavigate();
+
+  const [randomPortfolios, setRandomPortfolios] = React.useState<PortfolioItem[]>([]);
+
+  React.useEffect(() => {
+    const fetchPortfolios = async () => {
+      try {
+        const items = await apiService.getPortfolioItems();
+        if (items && items.length > 0) {
+          const shuffled = [...items].sort(() => 0.5 - Math.random());
+          setRandomPortfolios(shuffled.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Error fetching portfolios:", err);
+      }
+    };
+    fetchPortfolios();
+  }, []);
 
   // Smooth redirects to the targeted portfolio filters
   const handleCategoryRedirect = (category: string) => {
@@ -498,34 +516,47 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
         </Typography>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {[
-            {
-              src: modeling5,
-              overline: "Modeling",
-              title: "Prerna Shrestha",
-              caption: "Executive image captured with continuous ring lights.",
-            },
-            {
-              src: black,
-              overline: "Creative Photoshoot",
-              title: "Rohan Adhikari",
-              caption: "Black and White Photoshoot.",
-            },
-            {
-              src: birthday,
-              overline: "Birthday",
-              title: "Ananya Gautam",
-              caption: "Happy Birthday Cutie.",
-            },
-            {
-              src: bride2,
-              overline: "Creative Lighting",
-              title: "Tenzing Lama",
-              caption: "Bride makeup photoshoot in wedding.",
-            },
-          ].map((item) => (
+          {(randomPortfolios.length > 0
+            ? randomPortfolios.map((item) => ({
+              id: item.id,
+              src: item.imageUrl,
+              overline: item.category,
+              title: item.title,
+              caption: item.specLabel || "Custom Added Image",
+            }))
+            : [
+              {
+                id: "1",
+                src: modeling5,
+                overline: "Modeling",
+                title: "Prerna Shrestha",
+                caption: "Executive image captured with continuous ring lights.",
+              },
+              {
+                id: "2",
+                src: black,
+                overline: "Creative Photoshoot",
+                title: "Rohan Adhikari",
+                caption: "Black and White Photoshoot.",
+              },
+              {
+                id: "3",
+                src: birthday,
+                overline: "Birthday",
+                title: "Ananya Gautam",
+                caption: "Happy Birthday Cutie.",
+              },
+              {
+                id: "4",
+                src: bride2,
+                overline: "Creative Lighting",
+                title: "Tenzing Lama",
+                caption: "Bride makeup photoshoot in wedding.",
+              },
+            ]
+          ).map((item) => (
             <Box
-              key={item.title}
+              key={item.id}
               sx={{
                 position: "relative",
                 aspectRatio: "3/4",
@@ -583,12 +614,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
                 >
                   {item.title}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: "#cbd5e1", fontWeight: 300, mt: 0.5 }}
-                >
-                  {item.caption}
-                </Typography>
+
               </Box>
             </Box>
           ))}
