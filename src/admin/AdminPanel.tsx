@@ -137,6 +137,7 @@ export default function AdminPanel({
   );
 
   const [heroImage, setHeroImage] = useState<HeroImg | null>(null);
+  const [heroImages, setHeroImages] = useState<HeroImg[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -186,6 +187,7 @@ export default function AdminPanel({
       setTutorialVideos(fetchedTutorialVideos);
       setLearningArticles(fetchedLearningArticles);
       setHeroImage(fetchedHeroImages.length > 0 ? fetchedHeroImages[0] : null);
+      setHeroImages(fetchedHeroImages);
     } catch (err: any) {
       console.error("Error fetching admin dataset:", err);
     } finally {
@@ -931,12 +933,10 @@ export default function AdminPanel({
     setError(null);
 
     try {
-      if (heroImage) {
-        await apiService.deleteHeroImage(heroImage.id);
-      }
       const imageUrl = await apiService.uploadImage(file);
       await apiService.saveHeroImage({ imageUrl });
       const images = await apiService.getHeroImages();
+      setHeroImages(images);
       setHeroImage(images.length > 0 ? images[0] : null);
       if (onDataChange) onDataChange();
       triggerAlert("success", "Hero image updated successfully!");
@@ -952,17 +952,17 @@ export default function AdminPanel({
     }
   };
 
-  const handleHeroImageDelete = async () => {
-    if (!heroImage) return;
-
-    if (!window.confirm("Are you sure you want to delete the home image?")) return;
+  const handleHeroImageDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this home image?")) return;
 
     setUploading(true);
     setError(null);
 
     try {
-      await apiService.deleteHeroImage(heroImage.id);
-      setHeroImage(null);
+      await apiService.deleteHeroImage(id);
+      const images = await apiService.getHeroImages();
+      setHeroImages(images);
+      setHeroImage(images.length > 0 ? images[0] : null);
       if (onDataChange) onDataChange();
       triggerAlert("success", "Hero image deleted successfully.");
     } catch (err: any) {
@@ -1147,6 +1147,11 @@ export default function AdminPanel({
               </Typography>
             </Box>
             <Card sx={{ background: "#121214", border: "1px solid rgba(255,255,255,0.06)", p: 4, textAlign: "center" }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+                <Button variant="contained" onClick={handleHeroImageUploadClick} startIcon={<Upload size={18} />} sx={{ backgroundColor: "#E50914", "&:hover": { backgroundColor: "#b91c1c" } }}>
+                  Upload New Home Image
+                </Button>
+              </Box>
               <input
                 type="file"
                 accept="image/*"
@@ -1154,29 +1159,28 @@ export default function AdminPanel({
                 style={{ display: "none" }}
                 onChange={handleHeroImageFileChange}
               />
-              {uploading ? (
+              {uploading && (
                 <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 4 }}>
                   <CircularProgress sx={{ color: "#E50914", mb: 2 }} />
                   <Typography>Uploading image...</Typography>
                 </Box>
-              ) : heroImage ? (
-                <Box sx={{ position: "relative", display: "inline-block", maxWidth: "100%", borderRadius: "8px", overflow: "hidden" }}>
-                  <img src={heroImage.imageUrl} alt="Home Hero" style={{ maxWidth: "100%", maxHeight: "500px", objectFit: "contain" }} referrerPolicy="no-referrer" />
-                  <Box sx={{ mt: 3, display: "flex", justifyContent: "center", gap: 2 }}>
-                    <Button variant="outlined" onClick={handleHeroImageUploadClick} sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}>
-                      Replace Image
-                    </Button>
-                    <Button variant="contained" onClick={handleHeroImageDelete} sx={{ backgroundColor: "#E50914", "&:hover": { backgroundColor: "#b91c1c" } }}>
-                      Delete Image
-                    </Button>
-                  </Box>
+              )}
+              {heroImages && heroImages.length > 0 ? (
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
+                  {heroImages.map((img) => (
+                    <Box key={img.id} sx={{ position: "relative", display: "flex", flexDirection: "column", borderRadius: "8px", overflow: "hidden", border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <img src={img.imageUrl} alt="Home Hero" style={{ width: "100%", height: "250px", objectFit: "cover" }} referrerPolicy="no-referrer" />
+                      <Box sx={{ p: 2, display: "flex", justifyContent: "center", background: 'rgba(0,0,0,0.5)' }}>
+                        <Button variant="outlined" color="error" onClick={() => handleHeroImageDelete(img.id)} startIcon={<Trash2 size={16} />}>
+                          Delete Image
+                        </Button>
+                      </Box>
+                    </Box>
+                  ))}
                 </Box>
-              ) : (
+              ) : !uploading && (
                 <Box sx={{ py: 8 }}>
                   <Typography sx={{ color: "rgba(255,255,255,0.6)", mb: 3 }}>No home image uploaded yet.</Typography>
-                  <Button variant="contained" onClick={handleHeroImageUploadClick} startIcon={<Upload size={18} />} sx={{ backgroundColor: "#E50914", "&:hover": { backgroundColor: "#b91c1c" } }}>
-                    Upload Home Image
-                  </Button>
                 </Box>
               )}
             </Card>
