@@ -66,17 +66,17 @@ export interface StudioService {
   id: string;
   title: string;
   category:
-  | "Portrait"
-  | "Product"
-  | "Event"
-  | "Identity Photo"
-  | "Wedding"
-  | "Videography"
-  | "Photo Frame"
-  | "Photography"
-  | "Customized Gift"
-  | "Photo Enhancement"
-  | "Document Service";
+    | "Portrait"
+    | "Product"
+    | "Event"
+    | "Identity Photo"
+    | "Wedding"
+    | "Videography"
+    | "Photo Frame"
+    | "Photography"
+    | "Customized Gift"
+    | "Photo Enhancement"
+    | "Document Service";
   basePrice: string;
   duration: string;
   description: string;
@@ -174,8 +174,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
     { label: "Portfolio", section: "portfolio", icon: Film },
     { label: "Video", section: "video", icon: VideoIcon },
     { label: "Contact", section: "contact", icon: PhoneCall },
-    { label: 'Learn From Us', section: 'learn-from-us', icon: BookOpen },
-
+    { label: "Learn From Us", section: "learn-from-us", icon: BookOpen },
   ];
 
   const otherMenuItems = [
@@ -225,7 +224,6 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
 
   return (
     <>
-
       <AppBar
         position="sticky"
         elevation={0}
@@ -266,18 +264,47 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
               }}
             >
               {/* Left: Contact Info */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 2, sm: 4 } }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, transition: 'color 0.2s', '&:hover': { color: '#ffffff' }, cursor: 'pointer' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: { xs: 2, sm: 4 },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.75,
+                    transition: "color 0.2s",
+                    "&:hover": { color: "#ffffff" },
+                    cursor: "pointer",
+                  }}
+                >
                   <Phone size={14} className="text-[#E50914]" />
-                  <Typography variant="caption" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 500, letterSpacing: "0.05em" }}
+                  >
                     +977-9823367428
                   </Typography>
                 </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, transition: 'color 0.2s', '&:hover': { color: '#ffffff' }, cursor: 'pointer' }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.75,
+                    transition: "color 0.2s",
+                    "&:hover": { color: "#ffffff" },
+                    cursor: "pointer",
+                  }}
+                >
                   <Mail size={14} className="text-[#E50914]" />
-                  <Typography variant="caption" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 500, letterSpacing: "0.05em" }}
+                  >
                     studiomeroclick@gmail.com
-
                   </Typography>
                 </Box>
               </Box>
@@ -287,14 +314,14 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                 <Typography
                   variant="caption"
                   sx={{
-                    color: '#ffffff',
+                    color: "#ffffff",
                     fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                    fontSize: '0.65rem',
+                    textTransform: "uppercase",
+                    letterSpacing: "0.12em",
+                    fontSize: "0.65rem",
                     mr: 1,
                     opacity: 0.7,
-                    display: { xs: 'none', sm: 'block' }
+                    display: { xs: "none", sm: "block" },
                   }}
                 >
                   FOLLOW US:
@@ -307,20 +334,20 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    minWidth: '26px',
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: '4px',
+                    minWidth: "26px",
+                    width: "26px",
+                    height: "26px",
+                    borderRadius: "4px",
                     p: 0,
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#94a3b8',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      color: '#ffffff',
-                      backgroundColor: '#1877F2',
-                      borderColor: '#1877F2',
-                    }
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "#94a3b8",
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      color: "#ffffff",
+                      backgroundColor: "#1877F2",
+                      borderColor: "#1877F2",
+                    },
                   }}
                   title="Follow on Facebook"
                 >
@@ -334,20 +361,20 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    minWidth: '26px',
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: '4px',
+                    minWidth: "26px",
+                    width: "26px",
+                    height: "26px",
+                    borderRadius: "4px",
                     p: 0,
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#94a3b8',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      color: '#ffffff',
-                      backgroundColor: '#E1306C',
-                      borderColor: '#E1306C',
-                    }
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "#94a3b8",
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      color: "#ffffff",
+                      backgroundColor: "#E1306C",
+                      borderColor: "#E1306C",
+                    },
                   }}
                   title="Follow on Instagram"
                 >
@@ -361,20 +388,20 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    minWidth: '26px',
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: '4px',
+                    minWidth: "26px",
+                    width: "26px",
+                    height: "26px",
+                    borderRadius: "4px",
                     p: 0,
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#94a3b8',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      color: '#ffffff',
-                      backgroundColor: '#000000',
-                      borderColor: '#000000',
-                    }
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "#94a3b8",
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      color: "#ffffff",
+                      backgroundColor: "#000000",
+                      borderColor: "#000000",
+                    },
                   }}
                   title="Follow on TikTok"
                 >
@@ -400,20 +427,20 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    minWidth: '26px',
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: '4px',
+                    minWidth: "26px",
+                    width: "26px",
+                    height: "26px",
+                    borderRadius: "4px",
                     p: 0,
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#94a3b8',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      color: '#ffffff',
-                      backgroundColor: '#FF0000',
-                      borderColor: '#FF0000',
-                    }
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "#94a3b8",
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      color: "#ffffff",
+                      backgroundColor: "#FF0000",
+                      borderColor: "#FF0000",
+                    },
                   }}
                   title="Subscribe on YouTube"
                 >
@@ -427,20 +454,20 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    minWidth: '26px',
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: '4px',
+                    minWidth: "26px",
+                    width: "26px",
+                    height: "26px",
+                    borderRadius: "4px",
                     p: 0,
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#94a3b8',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      color: '#ffffff',
-                      backgroundColor: '#25D366',
-                      borderColor: '#25D366',
-                    }
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "#94a3b8",
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      color: "#ffffff",
+                      backgroundColor: "#25D366",
+                      borderColor: "#25D366",
+                    },
                   }}
                   title="Chat on WhatsApp"
                 >
@@ -494,7 +521,6 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   RUDRAMATI CHOWK, KATHMANDU
                 </span>
               </Box>
-
             </Box>
 
             {/* Desktop Navigation */}
@@ -791,6 +817,7 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                 </IconButton>
 
                 {/* Secret Admin Button */}
+
                 <IconButton
                   onClick={() => {
                     navigate("/admin");
@@ -799,13 +826,15 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   id="nav-admin-secret-desktop"
                   sx={{
                     ml: 0.5,
-                    color: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                    color: isDark
+                      ? "rgba(255,255,255,0.05)"
+                      : "rgba(0,0,0,0.05)",
                     "&:hover": {
                       color: "#E50914",
-                      backgroundColor: "transparent"
+                      backgroundColor: "transparent",
                     },
                     width: 24,
-                    height: 24
+                    height: 24,
                   }}
                   disableRipple
                 >
@@ -877,13 +906,16 @@ export default function Navbar({ onNavigate, activeSection }: NavbarProps) {
                   sx={{
                     ml: 0.5,
                     mr: 1,
-                    color: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                    visibility: "hidden",
+                    color: isDark
+                      ? "rgba(255,255,255,0.05)"
+                      : "rgba(0,0,0,0.05)",
                     "&:hover": {
                       color: "#E50914",
-                      backgroundColor: "transparent"
+                      backgroundColor: "transparent",
                     },
                     width: 24,
-                    height: 24
+                    height: 24,
                   }}
                   disableRipple
                 >

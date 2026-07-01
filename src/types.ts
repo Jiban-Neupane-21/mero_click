@@ -23,17 +23,17 @@ export interface StudioService {
   id: string;
   title: string;
   category:
-  | "Portrait"
-  | "Event"
-  | "Identity Photo"
-  | "Wedding"
-  | "Photo Frame"
-  | "Photography"
-  | "Customized Gift"
-  | "Photo Enhancement"
-  | "Document Service"
-  | "Videography"
-  | "Visa";
+    | "Portrait"
+    | "Event"
+    | "Identity Photo"
+    | "Wedding"
+    | "Photo Frame"
+    | "Photography"
+    | "Customized Gift"
+    | "Photo Enhancement"
+    | "Document Service"
+    | "Videography"
+    | "Visa";
   basePrice: string;
   duration: string;
   description: string;
@@ -53,14 +53,14 @@ export interface PortfolioItem {
   id: string;
   title: string;
   category:
-  | "Wedding"
-  | "Maternity"
-  | "Cake Smash"
-  | "Fashion"
-  | "Portrait"
-  | "Identity Photo"
-  | "Commercial"
-  | "Customize Gifts";
+    | "Wedding"
+    | "Maternity"
+    | "Cake Smash"
+    | "Fashion"
+    | "Portrait"
+    | "Identity Photo"
+    | "Commercial"
+    | "Customize Gifts";
   imageUrl: string;
   specLabel?: string;
   author?: string;
@@ -77,11 +77,11 @@ export interface VideoItem {
   title: string;
   youtubeId: string;
   category:
-  | "Wedding Reel"
-  | "Fashion"
-  | "Behind the Scenes"
-  | "UCG Ads"
-  | "Commercial";
+    | "Wedding Reel"
+    | "Fashion"
+    | "Behind the Scenes"
+    | "UCG Ads"
+    | "Commercial";
   duration: string;
   description: string;
   uploadDate: string;
@@ -125,7 +125,6 @@ export interface EditAdjustment {
   y: number; // panning offset y
 }
 
-
 export interface TutorialVideo {
   id: string;
   title: string;
@@ -148,3 +147,8 @@ export interface LearningArticle {
   author: string;
 }
 
+export interface HeroImg {
+  id: string;
+  imageUrl: string;
+  createdAt?: string;
+}
