@@ -155,6 +155,8 @@ export default function AdminPanel({
     category: "Biometrics",
     duration: "",
     description: "",
+    facebookLink: "",
+    tiktokLink: "",
   });
 
   const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
@@ -659,6 +661,8 @@ export default function AdminPanel({
       category: tutorial.category,
       duration: tutorial.duration,
       description: tutorial.description,
+      facebookLink: tutorial.facebookLink || "",
+      tiktokLink: tutorial.tiktokLink || "",
     });
     setIsTutorialModalOpen(true);
   };
@@ -671,95 +675,108 @@ export default function AdminPanel({
       category: "General",
       duration: "8:00",
       description: "",
+      facebookLink: "",
+      tiktokLink: "",
     });
     setIsTutorialModalOpen(true);
   };
 
+  // Preserved hero image hook logic (moved out of event handler to avoid React crash)
+  const fetchHeroImage = async () => {
+    setLoading(true);
+    try {
+      const images = await apiService.getHeroImages();
+      setHeroImage(images.length > 0 ? images[0] : null);
+    } catch (err) {
+      console.error("Error fetching hero images:", err);
+      setError("Failed to load hero image.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHeroImage();
+  }, []);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      if (heroImage) {
+        await apiService.deleteHeroImage(heroImage.id);
+      }
+      const imageUrl = await apiService.uploadImage(file);
+      await apiService.saveHeroImage({ imageUrl });
+      await fetchHeroImage();
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+      setError(err.message || "An error occurred during upload.");
+    } finally {
+      setUploading(false);
+      if (event.target) {
+        event.target.value = "";
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!heroImage) return;
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      await apiService.deleteHeroImage(heroImage.id);
+      setHeroImage(null);
+    } catch (err: any) {
+      console.error("Delete failed:", err);
+      setError(err.message || "An error occurred during deletion.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSaveTutorial = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tutorialForm.title || !tutorialForm.youtubeUrlOrId) {
+    if (!tutorialForm.title) {
+      triggerAlert("error", "Please enter a title.");
+      return;
+    }
+
+    if (
+      !tutorialForm.youtubeUrlOrId &&
+      !(tutorialForm as any).facebookLink &&
+      !(tutorialForm as any).tiktokLink
+    ) {
       triggerAlert(
         "error",
-        "Please enter a title and YouTube video URL or ID.",
+        "Please provide at least one link (YouTube, Facebook, or TikTok).",
       );
       return;
     }
 
-    const youtubeId = extractYoutubeId(tutorialForm.youtubeUrlOrId);
-    if (youtubeId.length !== 11) {
-      triggerAlert(
-        "error",
-        "Unable to parse standard YouTube video ID. Ensure link is correct.",
-      );
-      return;
+    let youtubeId = "";
+    if (tutorialForm.youtubeUrlOrId) {
+      youtubeId = extractYoutubeId(tutorialForm.youtubeUrlOrId);
+      if (youtubeId.length !== 11) {
+        triggerAlert(
+          "error",
+          "Unable to parse standard YouTube video ID. Ensure link is correct.",
+        );
+        return;
+      }
     }
-
-    const fetchHeroImage = async () => {
-      setLoading(true);
-      try {
-        const images = await apiService.getHeroImages();
-        setHeroImage(images.length > 0 ? images[0] : null);
-      } catch (err) {
-        console.error("Error fetching hero images:", err);
-        setError("Failed to load hero image.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    useEffect(() => {
-      fetchHeroImage();
-    }, []);
-
-    const handleUploadClick = () => {
-      fileInputRef.current?.click();
-    };
-
-    const handleFileChange = async (
-      event: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      setUploading(true);
-      setError(null);
-
-      try {
-        // Replace the existing image. First, delete the old one if it exists.
-        if (heroImage) {
-          await apiService.deleteHeroImage(heroImage.id);
-        }
-        const imageUrl = await apiService.uploadImage(file);
-        await apiService.saveHeroImage({ imageUrl });
-        await fetchHeroImage(); // Refetch to show the new image
-      } catch (err: any) {
-        console.error("Upload failed:", err);
-        setError(err.message || "An error occurred during upload.");
-      } finally {
-        setUploading(false);
-        // Reset file input
-        if (event.target) {
-          event.target.value = "";
-        }
-      }
-    };
-
-    const handleDelete = async () => {
-      if (!heroImage) return;
-
-      setUploading(true); // Use uploading state to disable buttons
-      setError(null);
-
-      try {
-        await apiService.deleteHeroImage(heroImage.id);
-        setHeroImage(null);
-      } catch (err: any) {
-        console.error("Delete failed:", err);
-        setError(err.message || "An error occurred during deletion.");
-      } finally {
-        setUploading(false);
-      }
-    };
 
     try {
       await apiService.saveTutorialVideo({
@@ -769,6 +786,8 @@ export default function AdminPanel({
         category: tutorialForm.category,
         duration: tutorialForm.duration,
         description: tutorialForm.description,
+        facebookLink: (tutorialForm as any).facebookLink,
+        tiktokLink: (tutorialForm as any).tiktokLink,
         publishedAt: new Date().toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
@@ -4212,10 +4231,83 @@ export default function AdminPanel({
                 label="YouTube URL or 11-Digit Video ID"
                 placeholder="https://www.youtube.com/watch?v=..."
                 margin="normal"
-                required
                 value={tutorialForm.youtubeUrlOrId}
                 onChange={(e) =>
                   handleTutorialFormChange("youtubeUrlOrId", e.target.value)
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: {
+                    style: { color: "#ffffff" },
+                    startAdornment: (
+                      <IconButton
+                        size="small"
+                        edge="start"
+                        sx={{ color: "rgba(255,255,255,0.4)" }}
+                      >
+                        <VideoIcon size={14} />
+                      </IconButton>
+                    ),
+                  },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Facebook Video URL"
+                placeholder="https://www.facebook.com/..."
+                margin="normal"
+                value={(tutorialForm as any).facebookLink}
+                onChange={(e) =>
+                  handleTutorialFormChange("facebookLink", e.target.value)
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: {
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: '"Space Grotesk"',
+                    },
+                  },
+                  input: {
+                    style: { color: "#ffffff" },
+                    startAdornment: (
+                      <IconButton
+                        size="small"
+                        edge="start"
+                        sx={{ color: "rgba(255,255,255,0.4)" }}
+                      >
+                        <VideoIcon size={14} />
+                      </IconButton>
+                    ),
+                  },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "rgba(255, 255, 255, 0.12)" },
+                    "&:hover fieldset": { borderColor: "#E50914" },
+                    "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                label="TikTok Video URL"
+                placeholder="https://www.tiktok.com/..."
+                margin="normal"
+                value={(tutorialForm as any).tiktokLink}
+                onChange={(e) =>
+                  handleTutorialFormChange("tiktokLink", e.target.value)
                 }
                 slotProps={{
                   inputLabel: {
