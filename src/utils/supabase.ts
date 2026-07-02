@@ -623,6 +623,8 @@ export const apiService = {
       duration: video.duration || "5:00",
       description: video.description,
       publishedAt: video.publishedAt || new Date().toISOString().split("T")[0],
+      facebookLink: video.facebookLink,
+      tiktokLink: video.tiktokLink,
     };
 
     if (isSupabaseConfigured && supabase) {

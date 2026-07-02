@@ -42,6 +42,20 @@ import { TutorialVideo, LearningArticle } from '../types';
 import { ColorModeContext } from '../App';
 import { supabase } from '../utils/supabase';
 
+const extractTiktokId = (url: string) => {
+    try {
+        const urlObj = new URL(url);
+        const paths = urlObj.pathname.split('/');
+        const videoIndex = paths.indexOf('video');
+        if (videoIndex !== -1 && paths.length > videoIndex + 1) {
+            return paths[videoIndex + 1];
+        }
+    } catch (e) {
+        return null;
+    }
+    return null;
+};
+
 export default function LearnFromUs() {
     const { mode } = useContext(ColorModeContext);
     const isDark = mode === 'dark';
@@ -139,6 +153,8 @@ export default function LearnFromUs() {
         setCopiedId(article.id);
         setTimeout(() => setCopiedId(null), 2000);
     };
+
+    const isTikTokVideo = theaterVideo && !theaterVideo.youtubeId && !theaterVideo.facebookLink && theaterVideo.tiktokLink;
 
     return (
         <Box
@@ -375,15 +391,34 @@ export default function LearnFromUs() {
                                                         backgroundColor: '#000000'
                                                     }}
                                                 >
-                                                    <CardMedia
-                                                        component="img"
-                                                        image={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
-                                                        alt={video.title}
-                                                        onError={(e: any) => {
-                                                            e.target.src = `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`;
-                                                        }}
-                                                        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                    />
+                                                    {video.youtubeId ? (
+                                                        <CardMedia
+                                                            component="img"
+                                                            image={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
+                                                            alt={video.title}
+                                                            onError={(e: any) => {
+                                                                e.target.src = `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`;
+                                                            }}
+                                                            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+                                                    ) : (
+                                                        <Box sx={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            background: 'linear-gradient(135deg, #18181b 0%, #27272a 100%)',
+                                                            color: 'rgba(255,255,255,0.7)',
+                                                            gap: 1.5
+                                                        }}>
+                                                            <Video size={48} strokeWidth={1} />
+                                                            <Typography variant="overline" sx={{ fontWeight: 600, letterSpacing: '0.1em' }}>
+                                                                {video.facebookLink ? 'Facebook Video' : video.tiktokLink ? 'TikTok Video' : 'Video Tutorial'}
+                                                            </Typography>
+                                                        </Box>
+                                                    )}
                                                     <Box sx={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.25)' }} />
 
                                                     {/* Hover Play Bubble overlay */}
@@ -735,7 +770,7 @@ export default function LearnFromUs() {
                 {theaterVideo && (
                     <Dialog
                         fullWidth
-                        maxWidth="md"
+                        maxWidth={isTikTokVideo ? "xs" : "md"}
                         open={Boolean(theaterVideo)}
                         onClose={() => setTheaterVideo(null)}
                         sx={{
@@ -773,7 +808,9 @@ export default function LearnFromUs() {
                                     sx={{
                                         position: 'relative',
                                         width: '100%',
-                                        aspectRatio: '16/9',
+                                        aspectRatio: isTikTokVideo ? '9/16' : '16/9',
+                                        maxHeight: isTikTokVideo ? '85vh' : 'none',
+                                        margin: isTikTokVideo ? '0 auto' : '0',
                                         borderRadius: '8px',
                                         overflow: 'hidden',
                                         backgroundColor: '#000000',
@@ -781,13 +818,36 @@ export default function LearnFromUs() {
                                         boxShadow: '0 20px 50px rgba(0,0,0,0.85)'
                                     }}
                                 >
-                                    <iframe
-                                        title={theaterVideo.title}
-                                        src={`https://www.youtube.com/embed/${theaterVideo.youtubeId}?autoplay=1&rel=0`}
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        allowFullScreen
-                                        style={{ width: '100%', height: '100%', border: 'none' }}
-                                    />
+                                    {theaterVideo.youtubeId ? (
+                                        <iframe
+                                            title={theaterVideo.title}
+                                            src={`https://www.youtube.com/embed/${theaterVideo.youtubeId}?autoplay=1&rel=0`}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            allowFullScreen
+                                            style={{ width: '100%', height: '100%', border: 'none' }}
+                                        />
+                                    ) : theaterVideo.facebookLink ? (
+                                        <iframe
+                                            title={theaterVideo.title}
+                                            src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(theaterVideo.facebookLink)}&show_text=0&width=800`}
+                                            style={{ width: '100%', height: '100%', border: 'none', overflow: 'hidden' }}
+                                            scrolling="no"
+                                            frameBorder="0"
+                                            allowFullScreen={true}
+                                            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                                        />
+                                    ) : theaterVideo.tiktokLink ? (
+                                        <iframe
+                                            title={theaterVideo.title}
+                                            src={`https://www.tiktok.com/embed/v2/${extractTiktokId(theaterVideo.tiktokLink) || ''}`}
+                                            style={{ width: '100%', height: '100%', border: 'none' }}
+                                            allow="autoplay; encrypted-media; picture-in-picture"
+                                        />
+                                    ) : (
+                                        <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                                            <Typography>No video source available</Typography>
+                                        </Box>
+                                    )}
                                 </Box>
 
                                 {/* Description footer */}
