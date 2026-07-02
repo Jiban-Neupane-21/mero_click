@@ -34,7 +34,8 @@ import PricingPage from "./pages/PricingPage";
 import BookingPage from "./pages/BookingPage";
 import VideoSection from "./pages/VideoPage";
 import AdminRoutes from "./routes/AdminRoutes";
-import LearnFromUs from './pages/LearnFromUsPage';
+import LearnFromUs from "./pages/LearnFromUsPage";
+import ClaimOffer from "./components/ClaimOffer";
 
 import { Camera, MapPin, ExternalLink, Mail, PhoneCall } from "lucide-react";
 
@@ -42,7 +43,7 @@ import logo from "./assets/Mero Click.png";
 
 export const ColorModeContext = createContext({
   mode: "dark" as "dark" | "light",
-  toggleColorMode: () => { },
+  toggleColorMode: () => {},
 });
 
 function AppContent() {
@@ -84,8 +85,8 @@ function AppContent() {
         return "/video";
       case "visa-guides":
         return "/visa-guides";
-      case 'learn-from-us':
-        return '/learn';
+      case "learn-from-us":
+        return "/learn";
 
       case "resizer":
         return "/resizer";
@@ -93,6 +94,8 @@ function AppContent() {
         return "/pricing";
       case "book-session":
         return "/book";
+      case "claim-offer":
+        return "/claimoffer";
       default:
         return "/";
     }
@@ -113,8 +116,8 @@ function AppContent() {
         return "contact";
       case "/video":
         return "video";
-      case '/learn':
-        return 'learn-from-us';
+      case "/learn":
+        return "learn-from-us";
       case "/visa-guides":
         return "visa-guides";
       case "/resizer":
@@ -123,6 +126,9 @@ function AppContent() {
         return "pricing";
       case "/book":
         return "book-session";
+      case "claim-offer":
+        return "/claimoffer";
+
       default:
         return "home";
     }
@@ -157,7 +163,7 @@ function AppContent() {
           <Route path="/faqs" element={<FaqsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/video" element={<VideoSection />} />
-          <Route path='/learn' element={<LearnFromUs />} />
+          <Route path="/learn" element={<LearnFromUs />} />
           <Route
             path="/visa-guides"
             element={
@@ -176,6 +182,14 @@ function AppContent() {
           <Route
             path="/book"
             element={<BookingPage initialServiceId={bookingServiceId} />}
+          />
+          <Route
+            path="/claimoffer"
+            element={
+              <Box id="page-claim-offer">
+                <ClaimOffer />
+              </Box>
+            }
           />
           {/* Admin Dashboard Route */}
           <Route path="/admin/*" element={<AdminRoutes />} />

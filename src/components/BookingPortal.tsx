@@ -33,7 +33,6 @@ interface BookingPortalProps {
   onBookingComplete?: (details: BookingDetails) => void;
 }
 
-
 export default function BookingPortal({
   initialServiceId,
   onBookingComplete,
@@ -123,7 +122,8 @@ export default function BookingPortal({
     "Complete Appointment",
   ];
 
-  const activeServiceObj = services.find((s) => s.id === selectedService) || services[0];
+  const activeServiceObj =
+    services.find((s) => s.id === selectedService) || services[0];
   const activeAddons =
     selectedService === "service-wedding-shoot" ? weddingAddons : studioAddons;
 
@@ -146,7 +146,10 @@ export default function BookingPortal({
         setServices(data);
         setLoading(false);
         if (data.length > 0) {
-          if (!initialServiceId || !data.find((s) => s.id === initialServiceId)) {
+          if (
+            !initialServiceId ||
+            !data.find((s) => s.id === initialServiceId)
+          ) {
             setSelectedService(data[0].id);
           } else {
             setSelectedService(initialServiceId);
@@ -161,16 +164,37 @@ export default function BookingPortal({
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', backgroundColor: "background.default" }}>
-        <CircularProgress sx={{ color: '#E50914' }} />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "50vh",
+          backgroundColor: "background.default",
+        }}
+      >
+        <CircularProgress sx={{ color: "#E50914" }} />
       </Box>
     );
   }
 
   if (services.length === 0) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', backgroundColor: "background.default" }}>
-        <Typography sx={{ color: 'text.secondary', fontFamily: '"Space Grotesk", sans-serif' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "50vh",
+          backgroundColor: "background.default",
+        }}
+      >
+        <Typography
+          sx={{
+            color: "text.secondary",
+            fontFamily: '"Space Grotesk", sans-serif',
+          }}
+        >
           No services available at the moment.
         </Typography>
       </Box>
@@ -220,7 +244,6 @@ export default function BookingPortal({
     }
   };
 
-
   const handleBookingSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError("");
@@ -245,8 +268,8 @@ export default function BookingPortal({
 
     try {
       await emailjs.send(
-        "service_9rtfyi5",  // service id
-        "template_ep9aanz",//template id
+        "service_wt15ou7", // service id
+        "template_sfe4x7z", //template id
         {
           client_name: clientName,
           client_email: clientEmail,
@@ -273,7 +296,7 @@ export default function BookingPortal({
           total_price: totalPrice.toLocaleString(),
           notes: notes || "None provided",
         },
-        "BLbQPhNLl6x16IE1a", //public key
+        "cDNJDxxr2a8Yz4PF8", //public key
       );
 
       if (onBookingComplete) {
@@ -880,8 +903,6 @@ export default function BookingPortal({
                     </Typography>
                   </Box>
                 </div>
-
-
               </div>
 
               <Box
@@ -1159,7 +1180,12 @@ export default function BookingPortal({
                 {submitError && (
                   <Typography
                     variant="caption"
-                    sx={{ color: "#ff4d4d", display: "block", mb: 2, textAlign: "center" }}
+                    sx={{
+                      color: "#ff4d4d",
+                      display: "block",
+                      mb: 2,
+                      textAlign: "center",
+                    }}
                   >
                     {submitError}
                   </Typography>
