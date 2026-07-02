@@ -541,43 +541,43 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {(randomPortfolios.length > 0
             ? randomPortfolios.map((item) => ({
-                id: item.id,
-                src: item.imageUrl,
-                overline: item.category,
-                title: item.title,
-                caption: item.specLabel || "Custom Added Image",
-              }))
+              id: item.id,
+              src: item.imageUrl,
+              overline: item.category,
+              title: item.title,
+              caption: item.specLabel || "Custom Added Image",
+            }))
             : [
-                {
-                  id: "1",
-                  src: modeling5,
-                  overline: "Modeling",
-                  title: "Prerna Shrestha",
-                  caption:
-                    "Executive image captured with continuous ring lights.",
-                },
-                {
-                  id: "2",
-                  src: black,
-                  overline: "Creative Photoshoot",
-                  title: "Rohan Adhikari",
-                  caption: "Black and White Photoshoot.",
-                },
-                {
-                  id: "3",
-                  src: birthday,
-                  overline: "Birthday",
-                  title: "Ananya Gautam",
-                  caption: "Happy Birthday Cutie.",
-                },
-                {
-                  id: "4",
-                  src: bride2,
-                  overline: "Creative Lighting",
-                  title: "Tenzing Lama",
-                  caption: "Bride makeup photoshoot in wedding.",
-                },
-              ]
+              {
+                id: "1",
+                src: modeling5,
+                overline: "Modeling",
+                title: "Prerna Shrestha",
+                caption:
+                  "Executive image captured with continuous ring lights.",
+              },
+              {
+                id: "2",
+                src: black,
+                overline: "Creative Photoshoot",
+                title: "Rohan Adhikari",
+                caption: "Black and White Photoshoot.",
+              },
+              {
+                id: "3",
+                src: birthday,
+                overline: "Birthday",
+                title: "Ananya Gautam",
+                caption: "Happy Birthday Cutie.",
+              },
+              {
+                id: "4",
+                src: bride2,
+                overline: "Creative Lighting",
+                title: "Tenzing Lama",
+                caption: "Bride makeup photoshoot in wedding.",
+              },
+            ]
           ).map((item) => (
             <Box
               key={item.id}
@@ -670,6 +670,73 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
         </Box>
       </Container>
 
+
+      <Box
+        sx={{
+          backgroundColor: mode === "dark" ? "#070707" : "#f8fafc",
+          borderTop: "1px solid",
+          borderColor:
+            mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+        }}
+      >
+        <Container maxWidth="xl" sx={{ py: 6 }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontWeight: 700,
+              mb: 1,
+              textAlign: "center",
+            }}
+          >
+            Products We Offer
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              textAlign: "center",
+              maxWidth: "700px",
+              mx: "auto",
+              mb: 5,
+              fontWeight: 300,
+            }}
+          >
+            Explore our beautifully crafted physical products and preservation
+            services, creating timeless keepsakes for your memories.
+          </Typography>
+          <Box
+            sx={{
+              bgcolor: COLORS.paper,
+              
+            }}
+          >
+            <Box sx={{  mx: "auto" }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(3, 1fr)",
+                    lg: "repeat(4, 1fr)",
+                    xl: "repeat(5, 1fr)",
+                  },
+                  gap: 3.5,
+                }}
+              >
+                {PRODUCTS.map((item, index) => (
+                  <ServiceCard
+                    key={item.title}
+                    item={item}
+                    index={index}
+                    onClick={() => { }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
       {/* Explore Portfolios by Category Showcase Section */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -935,73 +1002,7 @@ export default function HomePage({ onNavigate }: HomePageProps, index = 0) {
           </div>
         </Box>
       </motion.div>
-      <Box
-        sx={{
-          backgroundColor: mode === "dark" ? "#070707" : "#f8fafc",
-          borderTop: "1px solid",
-          borderColor:
-            mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-        }}
-      >
-        <Container maxWidth="xl" sx={{ py: 6 }}>
-          <Typography
-            variant="h4"
-            sx={{
-              fontFamily: '"Space Grotesk", sans-serif',
-              fontWeight: 700,
-              mb: 1,
-              textAlign: "center",
-            }}
-          >
-            Products We Offer
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              textAlign: "center",
-              maxWidth: "700px",
-              mx: "auto",
-              mb: 5,
-              fontWeight: 300,
-            }}
-          >
-            Explore our beautifully crafted physical products and preservation
-            services, creating timeless keepsakes for your memories.
-          </Typography>
-          <Box
-            sx={{
-              bgcolor: COLORS.paper,
-              py: { xs: 6, md: 8 },
-              px: { xs: 2, md: 3 },
-            }}
-          >
-            <Box sx={{ maxWidth: 1180, mx: "auto" }}>
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: {
-                    xs: "1fr",
-                    sm: "repeat(2, 1fr)",
-                    md: "repeat(3, 1fr)",
-                    lg: "repeat(3, 1fr)",
-                    xl: "repeat(4, 1fr)",
-                  },
-                  gap: 3.5,
-                }}
-              >
-                {PRODUCTS.map((item, index) => (
-                  <ServiceCard
-                    key={item.title}
-                    item={item}
-                    index={index}
-                    onClick={() => {}}
-                  />
-                ))}
-              </Box>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+
     </Box>
   );
 }
