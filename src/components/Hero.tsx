@@ -408,11 +408,12 @@ export default function Hero({ onNavigate }: HeroProps) {
                       <Button
                         variant="contained"
                         size="small"
-                        onClick={() =>
-                          handleCategoryRedirect(
-                            offers[activeAdIndex].targetCategory,
-                          )
-                        }
+                        onClick={() => {
+                          navigate(
+                            `/claimoffer?offerId=${offers[activeAdIndex].id}`,
+                          );
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
                         sx={{
                           backgroundColor: offers[activeAdIndex].accentColor,
                           fontFamily: '"Space Grotesk", sans-serif',

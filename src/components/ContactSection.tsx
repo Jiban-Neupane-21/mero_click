@@ -39,20 +39,34 @@ export default function ContactSection() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && email.trim() && message.trim()) {
-      setIsSubmitted(true);
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setName("");
-        setEmail("");
-        setMessage("");
-      }, 5000);
+    const newErrors: { name?: string; email?: string; message?: string } = {};
+    if (!name.trim()) newErrors.name = "Name is required";
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Invalid email format";
     }
+    if (!message.trim()) newErrors.message = "Message is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    setIsSubmitted(true);
+    setTimeout(() => {
+      setIsSubmitted(false);
+      setName("");
+      setEmail("");
+      setMessage("");
+    }, 5000);
   };
 
   const mapCoordinates = "27.6915° N, 85.3422° E";
@@ -334,18 +348,18 @@ export default function ContactSection() {
 
                   {isSubmitted ? (
                     <Alert
-                      severity="success"
-                      icon={<CheckCircle2 size={18} />}
+                      severity="error"
                       sx={{
-                        backgroundColor: "rgba(34, 197, 94, 0.08)",
-                        color: "#22c55e",
-                        border: "1px solid rgba(34, 197, 94, 0.2)",
+                        backgroundColor: "rgba(229, 9, 20, 0.08)",
+                        color: "#E50914",
+                        border: "1px solid rgba(229, 9, 20, 0.2)",
                         mb: 1,
-                        ".MuiAlert-icon": { color: "#22c55e" },
+                        ".MuiAlert-icon": { color: "#E50914" },
                       }}
                     >
-                      Your message has been received! Our studio managers will
-                      get back to you within 2-3 working hours.
+                      We're sorry, but we're currently unable to send your message through this form. Please contact us directly using the details below, and we'll be happy to assist you. <br />
+                      Email: studiomeroclick@gmail.com
+                      Phone: +977-9823367428
                     </Alert>
                   ) : (
                     <form onSubmit={handleSubmit} id="contact-inquiry-form">
@@ -356,7 +370,12 @@ export default function ContactSection() {
                             fullWidth
                             label="Your Name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => {
+                              setName(e.target.value);
+                              if (errors.name) setErrors({ ...errors, name: undefined });
+                            }}
+                            error={!!errors.name}
+                            helperText={errors.name}
                             size="small"
                             sx={{
                               "& .MuiOutlinedInput-root": {
@@ -387,7 +406,12 @@ export default function ContactSection() {
                             type="email"
                             label="Email Address"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              if (errors.email) setErrors({ ...errors, email: undefined });
+                            }}
+                            error={!!errors.email}
+                            helperText={errors.email}
                             size="small"
                             sx={{
                               "& .MuiOutlinedInput-root": {
@@ -419,7 +443,12 @@ export default function ContactSection() {
                             rows={4}
                             label="Write your message here..."
                             value={message}
-                            onChange={(e) => setMessage(e.target.value)}
+                            onChange={(e) => {
+                              setMessage(e.target.value);
+                              if (errors.message) setErrors({ ...errors, message: undefined });
+                            }}
+                            error={!!errors.message}
+                            helperText={errors.message}
                             size="small"
                             sx={{
                               "& .MuiOutlinedInput-root": {
